@@ -52,10 +52,8 @@ namespace AmazonChessGUI
                         return new ChessGame();
                     else
                         throw new Exception("file doesn't exist");
-                else 
-                {
-
-                }
+                else
+                    return LoadGame(filename);
             }
             catch (Exception)
             {

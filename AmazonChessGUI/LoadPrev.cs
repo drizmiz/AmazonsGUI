@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace AmazonChessGUI
 {
@@ -79,14 +80,15 @@ namespace AmazonChessGUI
                 path = Environment.CurrentDirectory + "\\prev.amz";
             else
             {
-                FolderBrowserDialog dialog = new FolderBrowserDialog();
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.DefaultExt = ".amz";
                 dialog.ShowDialog();
-                path = dialog.SelectedPath;
+                path = dialog.FileName;
                 dialog.Dispose();
             }
             ChessGame game = LoadAMZ.LoadGame(path);
 
-            new System.Threading.Thread((System.Threading.ThreadStart)delegate
+            new Thread((ThreadStart)delegate
             {
                 Application.Run(new SinglePlayerForm(game));
             }).Start();
@@ -95,7 +97,11 @@ namespace AmazonChessGUI
 
         private void NewButton_Click(object sender, EventArgs e)
         {
-
+            new Thread((ThreadStart)delegate
+            {
+                Application.Run(new SinglePlayerForm(new ChessGame()));
+            }).Start();
+            Close();
         }
     }
 }

@@ -54,7 +54,7 @@ namespace AmazonChessGUI
         /// <summary>
         /// 计步器，用来确定黑白
         /// </summary>
-        private int _Step = 0;
+        private int _Step = 1;
 
         /// <summary>
         /// 纵线数
@@ -121,7 +121,7 @@ namespace AmazonChessGUI
             {
                 for (int col = 0; col < this._vertical - 1; col++)
                 {
-                    ChessPieces piec = _Matrix[row * (this._vertical - 1) + col];
+                    ChessPiece piec = _Matrix[row * (this._vertical - 1) + col];
 
                     if (piec.IsOk)
                     {
@@ -139,25 +139,50 @@ namespace AmazonChessGUI
                 }
             }
         }
-
+        ref ChessPiece Piece(int nx, int ny)
+        {
+            return ref _Matrix[nx + ny * (_vertical - 1)];
+        }
         void PaintForXY(int nx, int ny, Color color)
         {
             // check
             if (nx < 0 || ny < 0 || nx >= _horizontal - 1 || ny >= _vertical - 1)
                 return;
 
-            ChessPieces piec = this._Matrix[nx + ny * (this._vertical - 1)];
-            if (!piec.IsOk)
-            {
-                piec.Step = ++_Step;
-                piec.Color = color;
-                piec.IsOk = true;
+            ChessPiece piec = _Matrix[nx + ny * (_vertical - 1)];
+            // if (!piec.IsOk)
+            // {
+            piec.Step = _Step;
+            piec.Color = color;
+            piec.IsOk = true;
 
-                Invalidate();
-            }
+            Invalidate();
+            // }
         }
 
         Chess selected;
+        bool validSelect = false;
+
+        enum WhoseMove
+        {
+            blackMove = 0,
+            blackArrow = 1,
+            whiteMove = 2,
+            whiteArrow = 3,
+            invalid = 4
+        }
+
+        WhoseMove currentMove = WhoseMove.blackMove;
+
+        void NextMove(ref WhoseMove move)
+        {
+            move = (++move == WhoseMove.invalid) ? WhoseMove.blackMove : move;
+        }
+
+        void PrevMove(ref WhoseMove move)
+        {
+            move = (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (--move);
+        }
 
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
         {
@@ -180,27 +205,51 @@ namespace AmazonChessGUI
 
                     if (div_width * div_width + div_height * div_height <= this._RadiusSquare)
                     {
-                        if (nx == selected.nx && ny == selected.ny) // 已选中
+                        if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
                         {
-                            Color color;
-                            switch (_Step % 4)
+                            if (!validSelect) // 未选中
                             {
-                                case 0:
-                                    color = Color.Black; break;
-                                case 1:
-                                    color = Color.Red; break;
-                                case 2:
-                                    color = Color.White; break;
-                                default:
-                                    color = Color.Pink; break;
+                                ChessPiece piece = Piece(nx, ny);
+                                if (piece.IsOk)
+                                {
+                                    if ((piece.Color == Color.Black && currentMove == WhoseMove.blackMove) ||
+                                        (piece.Color == Color.White && currentMove == WhoseMove.whiteMove))
+                                    {
+                                        selected.nx = nx;
+                                        selected.ny = ny;
+                                        piece.Color = Color.Yellow;
+                                        validSelect = true;
+                                        // piec.IsOk = true;
+
+                                        Invalidate();
+                                    }
+                                }
                             }
-                            PaintForXY(nx, ny, color);
+                            else //已选中
+                            {
+                                ChessPiece piece = Piece(selected.nx, selected.ny);
+                                piece.Step = 0;
+                                piece.IsOk = false;
+
+                                _Step++;
+
+                                if (currentMove == WhoseMove.blackMove)
+                                    PaintForXY(nx, ny, Color.Black);
+                                else
+                                    PaintForXY(nx, ny, Color.White);
+
+                                NextMove(ref currentMove);
+                                validSelect = false;
+                            }
                         }
-                        else
+                        else        // 该放障碍物了
                         {
-                            selected.nx = nx;
-                            selected.ny = ny;
-                            PaintForXY(nx, ny, Color.Yellow);
+                            ChessPiece piece = Piece(nx, ny);
+                            if (!piece.IsOk)
+                            {
+                                PaintForXY(nx, ny, Color.Red);
+                                NextMove(ref currentMove);
+                            }
                         }
                     }
 
@@ -232,15 +281,15 @@ namespace AmazonChessGUI
             Invalidate();
         }
 
-        ChessPieces[] _Matrix;
+        ChessPiece[] _Matrix;
 
         private void InitMatrix()
         {
-            _Matrix = new ChessPieces[(_horizontal - 1) * (_vertical - 1)];
+            _Matrix = new ChessPiece[(_horizontal - 1) * (_vertical - 1)];
 
             for (int i = 0; i < _Matrix.Length; i++)
             {
-                _Matrix[i] = new ChessPieces
+                _Matrix[i] = new ChessPiece
                 {
                     Color = Color.Black,
                     IsOk = false,
@@ -250,7 +299,7 @@ namespace AmazonChessGUI
         }
     }
 
-    public class ChessPieces
+    public class ChessPiece
     {
         public Color Color { set; get; }
         public bool IsOk { set; get; }
