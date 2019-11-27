@@ -80,8 +80,10 @@ namespace AmazonChessGUI
                 path = Environment.CurrentDirectory + "\\prev.amz";
             else
             {
-                OpenFileDialog dialog = new OpenFileDialog();
-                dialog.DefaultExt = ".amz";
+                OpenFileDialog dialog = new OpenFileDialog
+                {
+                    DefaultExt = ".amz"
+                };
                 dialog.ShowDialog();
                 path = dialog.FileName;
                 dialog.Dispose();

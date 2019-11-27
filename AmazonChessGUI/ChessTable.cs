@@ -15,7 +15,9 @@ namespace AmazonChessGUI
     {
         private ChessGame Game { get; set; }
 
-        public ChessTable(ChessGame game)
+        private bool inited = false;
+
+        public ChessTable()
         {
             InitializeComponent();
             SetStyle(ControlStyles.UserPaint, true);
@@ -25,16 +27,24 @@ namespace AmazonChessGUI
             this.Resize += ChessTable_Resize;
             this.MouseClick += ChessTable_MouseClick;
             this.Load += ChessTable_Load;
+        }
 
+        public void initGame(ChessGame game)
+        {
             Game = game;
+
             selected.nx = -1;
             selected.ny = -1;
 
             InitMatrix();
+
+            inited = true;
         }
 
         private void ChessTable_Load(object sender, EventArgs e)
         {
+            // if (!inited) throw new Exception();
+
             Color color = Color.Black;
             PaintForXY(0, 2, color);
             PaintForXY(2, 0, color);
