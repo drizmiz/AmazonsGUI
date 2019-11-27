@@ -38,7 +38,7 @@ namespace AmazonChessGUI
                 }
 
                 game.Text = reader.ReadToEnd();
-
+                reader.Close();
                 // stream.Close();
             }
             catch (FileNotFoundException)
@@ -97,9 +97,7 @@ namespace AmazonChessGUI
     public class ChessGame
     {
         public Color Color { get; set; }
-        public string Text { get => text; set => text = value; }
-
-        private string text = "";
+        public string Text { get; set; }
 
         public void MakeMove(Move move)
         {

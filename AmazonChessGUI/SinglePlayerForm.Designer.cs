@@ -35,12 +35,13 @@
             this.hintButton = new System.Windows.Forms.Button();
             this.helpButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
+            this.reverseButton = new System.Windows.Forms.Button();
             this.chessTable1 = new AmazonChessGUI.ChessTable();
             this.SuspendLayout();
             // 
             // saveButton
             // 
-            this.saveButton.Location = new System.Drawing.Point(422, 84);
+            this.saveButton.Location = new System.Drawing.Point(405, 78);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 1;
@@ -50,7 +51,7 @@
             // 
             // loadButton
             // 
-            this.loadButton.Location = new System.Drawing.Point(422, 42);
+            this.loadButton.Location = new System.Drawing.Point(405, 36);
             this.loadButton.Name = "loadButton";
             this.loadButton.Size = new System.Drawing.Size(75, 23);
             this.loadButton.TabIndex = 2;
@@ -60,7 +61,7 @@
             // 
             // newButton
             // 
-            this.newButton.Location = new System.Drawing.Point(422, 124);
+            this.newButton.Location = new System.Drawing.Point(405, 118);
             this.newButton.Name = "newButton";
             this.newButton.Size = new System.Drawing.Size(75, 23);
             this.newButton.TabIndex = 3;
@@ -70,7 +71,7 @@
             // 
             // regretButton
             // 
-            this.regretButton.Location = new System.Drawing.Point(422, 317);
+            this.regretButton.Location = new System.Drawing.Point(405, 311);
             this.regretButton.Name = "regretButton";
             this.regretButton.Size = new System.Drawing.Size(75, 23);
             this.regretButton.TabIndex = 4;
@@ -80,7 +81,7 @@
             // 
             // hintButton
             // 
-            this.hintButton.Location = new System.Drawing.Point(422, 355);
+            this.hintButton.Location = new System.Drawing.Point(405, 349);
             this.hintButton.Name = "hintButton";
             this.hintButton.Size = new System.Drawing.Size(75, 23);
             this.hintButton.TabIndex = 5;
@@ -90,7 +91,7 @@
             // 
             // helpButton
             // 
-            this.helpButton.Location = new System.Drawing.Point(53, 404);
+            this.helpButton.Location = new System.Drawing.Point(36, 398);
             this.helpButton.Name = "helpButton";
             this.helpButton.Size = new System.Drawing.Size(75, 23);
             this.helpButton.TabIndex = 6;
@@ -100,7 +101,7 @@
             // 
             // exitButton
             // 
-            this.exitButton.Location = new System.Drawing.Point(324, 404);
+            this.exitButton.Location = new System.Drawing.Point(307, 398);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(75, 23);
             this.exitButton.TabIndex = 7;
@@ -108,10 +109,19 @@
             this.exitButton.UseVisualStyleBackColor = true;
             this.exitButton.Click += new System.EventHandler(this.ExitButton_Click);
             // 
+            // reverseButton
+            // 
+            this.reverseButton.Location = new System.Drawing.Point(405, 271);
+            this.reverseButton.Name = "reverseButton";
+            this.reverseButton.Size = new System.Drawing.Size(75, 23);
+            this.reverseButton.TabIndex = 8;
+            this.reverseButton.Text = "翻转";
+            this.reverseButton.UseVisualStyleBackColor = true;
+            // 
             // chessTable1
             // 
             this.chessTable1.Horizontal = 9;
-            this.chessTable1.Location = new System.Drawing.Point(34, 23);
+            this.chessTable1.Location = new System.Drawing.Point(17, 17);
             this.chessTable1.Name = "chessTable1";
             this.chessTable1.Size = new System.Drawing.Size(382, 375);
             this.chessTable1.TabIndex = 0;
@@ -121,8 +131,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.DodgerBlue;
-            this.ClientSize = new System.Drawing.Size(530, 450);
+            this.BackColor = System.Drawing.Color.Peru;
+            this.ClientSize = new System.Drawing.Size(498, 444);
+            this.Controls.Add(this.reverseButton);
             this.Controls.Add(this.exitButton);
             this.Controls.Add(this.helpButton);
             this.Controls.Add(this.hintButton);
@@ -149,5 +160,6 @@
         private System.Windows.Forms.Button hintButton;
         private System.Windows.Forms.Button helpButton;
         private System.Windows.Forms.Button exitButton;
+        private System.Windows.Forms.Button reverseButton;
     }
 }

@@ -37,8 +37,8 @@ namespace AmazonChessGUI
             selected.ny = -1;
 
             InitMatrix();
-
-            inited = true;
+            
+            Invalidate();
         }
 
         private void ChessTable_Load(object sender, EventArgs e)
@@ -98,8 +98,13 @@ namespace AmazonChessGUI
             }
         }
 
+        public int Col { get { return _vertical - 1; } }
+        public int Row { get { return _horizontal - 1; } }
+
         [Description("线的颜色")]
         public Color ColorOfLine = Color.Black;
+
+
 
         protected override void OnPaint(PaintEventArgs pe)
         {
@@ -131,27 +136,32 @@ namespace AmazonChessGUI
             {
                 for (int col = 0; col < this._vertical - 1; col++)
                 {
-                    ChessPiece piec = _Matrix[row * (this._vertical - 1) + col];
+                    ChessPiece piec = _Matrix[row, col];
 
                     if (piec.IsOk)
                     {
-                        using (SolidBrush solidBrush = new SolidBrush(piec.Color))
+                        using (Pen pen = new Pen(Color.Black,(float)3.0))
                         {
-                            float x = (float)((col + 0.5 + 0.2) * tile_width);
-                            float y = (float)((row + 0.5 + 0.2) * tile_height);
-                            float width = (float)(tile_width * 0.6);
-                            float height = (float)(tile_height * 0.6);
+                            using (SolidBrush solidBrush = new SolidBrush(piec.Color))
+                            {
+                                float x = (float)((col + 0.5 + 0.2) * tile_width);
+                                float y = (float)((row + 0.5 + 0.2) * tile_height);
+                                float width = (float)(tile_width * 0.6);
+                                float height = (float)(tile_height * 0.6);
 
-                            pe.Graphics.FillEllipse(solidBrush, x, y, width, height);
-                            base.OnPaint(pe);
+                                pe.Graphics.DrawEllipse(pen, x, y, width, height);
+                                pe.Graphics.FillEllipse(solidBrush, x, y, width, height);
+                                base.OnPaint(pe);
+                            }
                         }
                     }
                 }
             }
         }
+
         ref ChessPiece Piece(int nx, int ny)
         {
-            return ref _Matrix[nx + ny * (_vertical - 1)];
+            return ref _Matrix[ny, nx];
         }
         void PaintForXY(int nx, int ny, Color color)
         {
@@ -159,7 +169,7 @@ namespace AmazonChessGUI
             if (nx < 0 || ny < 0 || nx >= _horizontal - 1 || ny >= _vertical - 1)
                 return;
 
-            ChessPiece piec = _Matrix[nx + ny * (_vertical - 1)];
+            ChessPiece piec = _Matrix[ny, nx];
             // if (!piec.IsOk)
             // {
             piec.Step = _Step;
@@ -222,14 +232,23 @@ namespace AmazonChessGUI
                                 ChessPiece piece = Piece(nx, ny);
                                 if (piece.IsOk)
                                 {
-                                    if ((piece.Color == Color.Black && currentMove == WhoseMove.blackMove) ||
-                                        (piece.Color == Color.White && currentMove == WhoseMove.whiteMove))
+                                    if (piece.Color == Color.Black && currentMove == WhoseMove.blackMove )
                                     {
+
+                                        piece.Color = Color.DimGray;
                                         selected.nx = nx;
                                         selected.ny = ny;
-                                        piece.Color = Color.Yellow;
                                         validSelect = true;
-                                        // piec.IsOk = true;
+
+                                        Invalidate();
+                                    }
+                                    else if((piece.Color == Color.White && currentMove == WhoseMove.whiteMove))
+                                    {
+
+                                        piece.Color = Color.LemonChiffon;
+                                        selected.nx = nx;
+                                        selected.ny = ny;
+                                        validSelect = true;
 
                                         Invalidate();
                                     }
@@ -257,7 +276,7 @@ namespace AmazonChessGUI
                             ChessPiece piece = Piece(nx, ny);
                             if (!piece.IsOk)
                             {
-                                PaintForXY(nx, ny, Color.Red);
+                                PaintForXY(nx, ny, Color.DodgerBlue);
                                 NextMove(ref currentMove);
                             }
                         }
@@ -266,22 +285,21 @@ namespace AmazonChessGUI
                     break;
 
                 case MouseButtons.Right:
-                    // right -> undo
-
-                    for (int i = 0; i < _Matrix.Length; i++)
+                    // right -> unselect
+                    if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
                     {
-                        if (_Matrix[i].IsOk && _Matrix[i].Step == _Step)
+                        if (validSelect)
                         {
-                            _Step--;
-                            _Matrix[i].Step = 0;
-                            _Matrix[i].IsOk = false;
+                            ChessPiece piece = Piece(selected.nx, selected.ny);
+                            if (currentMove == WhoseMove.blackArrow)
+                                piece.Color = Color.Black;
+                            else if (currentMove == WhoseMove.whiteArrow)
+                                piece.Color = Color.White;
+                            validSelect = false;
 
                             Invalidate();
-
-                            break;
                         }
                     }
-
                     break;
             }
         }
@@ -291,15 +309,15 @@ namespace AmazonChessGUI
             Invalidate();
         }
 
-        ChessPiece[] _Matrix;
+        ChessPiece[,] _Matrix;
 
         private void InitMatrix()
         {
-            _Matrix = new ChessPiece[(_horizontal - 1) * (_vertical - 1)];
+            _Matrix = new ChessPiece[Row, Col];
 
             for (int i = 0; i < _Matrix.Length; i++)
             {
-                _Matrix[i] = new ChessPiece
+                _Matrix[i / Col, i % Col] = new ChessPiece
                 {
                     Color = Color.Black,
                     IsOk = false,

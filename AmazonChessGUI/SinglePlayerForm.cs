@@ -18,6 +18,8 @@ namespace AmazonChessGUI
         {
             Game = game;
             InitializeComponent();
+
+            chessTable1.initGame(game);
         }
 
         #region 响应鼠标拖拽
