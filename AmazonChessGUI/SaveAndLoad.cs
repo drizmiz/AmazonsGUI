@@ -99,6 +99,8 @@ namespace AmazonChessGUI
         public Color Color { get; set; }
         public string Text { get; set; }
 
+        public ChessGame() { Text = ""; }
+
         public void MakeMove(Move move)
         {
             Text += move.source.nx + " ";

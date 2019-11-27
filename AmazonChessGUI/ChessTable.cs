@@ -55,15 +55,18 @@ namespace AmazonChessGUI
             PaintForXY(2, 7, color);
             PaintForXY(5, 7, color);
             PaintForXY(7, 5, color);
+
+            foreach(var move in Game.GetMoves())
+            {
+                MovePaint(move);
+            }
         }
 
         /// <summary>
         /// 半径的平方值，用来确定是否容忍这次放置
         /// </summary>
         private float _RadiusSquare = 0;
-        /// <summary>
-        /// 计步器，用来确定黑白
-        /// </summary>
+
         private int _Step = 1;
 
         /// <summary>
@@ -163,24 +166,28 @@ namespace AmazonChessGUI
         {
             return ref _Matrix[ny, nx];
         }
+        ref ChessPiece Piece(Chess chess)
+        {
+            return ref _Matrix[chess.ny, chess.nx];
+        }
         void PaintForXY(int nx, int ny, Color color)
         {
             // check
             if (nx < 0 || ny < 0 || nx >= _horizontal - 1 || ny >= _vertical - 1)
                 return;
 
-            ChessPiece piec = _Matrix[ny, nx];
+            ChessPiece piece = _Matrix[ny, nx];
             // if (!piec.IsOk)
             // {
-            piec.Step = _Step;
-            piec.Color = color;
-            piec.IsOk = true;
+            piece.Color = color;
+            piece.IsOk = true;
 
             Invalidate();
             // }
         }
 
         Chess selected;
+        Chess lastplace;
         bool validSelect = false;
 
         enum WhoseMove
@@ -223,7 +230,7 @@ namespace AmazonChessGUI
                     float div_width = (float)((nx + 1.0) * tile_width) - e.X;
                     float div_height = (float)((ny + 1.0) * tile_height) - e.Y;
 
-                    if (div_width * div_width + div_height * div_height <= this._RadiusSquare)
+                    if (div_width * div_width + div_height * div_height <= _RadiusSquare)
                     {
                         if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
                         {
@@ -232,7 +239,7 @@ namespace AmazonChessGUI
                                 ChessPiece piece = Piece(nx, ny);
                                 if (piece.IsOk)
                                 {
-                                    if (piece.Color == Color.Black && currentMove == WhoseMove.blackMove )
+                                    if (piece.Color == Color.Black && currentMove == WhoseMove.blackMove)
                                     {
 
                                         piece.Color = Color.DimGray;
@@ -242,7 +249,7 @@ namespace AmazonChessGUI
 
                                         Invalidate();
                                     }
-                                    else if((piece.Color == Color.White && currentMove == WhoseMove.whiteMove))
+                                    else if (piece.Color == Color.White && currentMove == WhoseMove.whiteMove)
                                     {
 
                                         piece.Color = Color.LemonChiffon;
@@ -256,19 +263,25 @@ namespace AmazonChessGUI
                             }
                             else //已选中
                             {
-                                ChessPiece piece = Piece(selected.nx, selected.ny);
-                                piece.Step = 0;
-                                piece.IsOk = false;
+                                if (selected.nx == nx || selected.ny == ny ||
+                                    selected.nx - nx == selected.ny - ny ||
+                                    selected.nx - nx == -(selected.ny - ny))
+                                {
+                                    ChessPiece piece = Piece(selected.nx, selected.ny);
+                                    piece.IsOk = false;
 
-                                _Step++;
+                                    _Step++;
 
-                                if (currentMove == WhoseMove.blackMove)
-                                    PaintForXY(nx, ny, Color.Black);
-                                else
-                                    PaintForXY(nx, ny, Color.White);
+                                    if (currentMove == WhoseMove.blackMove)
+                                        PaintForXY(nx, ny, Color.Black);
+                                    else
+                                        PaintForXY(nx, ny, Color.White);
 
-                                NextMove(ref currentMove);
-                                validSelect = false;
+                                    NextMove(ref currentMove);
+                                    lastplace.nx = nx;
+                                    lastplace.ny = ny;
+                                    validSelect = false;
+                                }
                             }
                         }
                         else        // 该放障碍物了
@@ -276,8 +289,13 @@ namespace AmazonChessGUI
                             ChessPiece piece = Piece(nx, ny);
                             if (!piece.IsOk)
                             {
-                                PaintForXY(nx, ny, Color.DodgerBlue);
-                                NextMove(ref currentMove);
+                                if (lastplace.nx == nx || lastplace.ny == ny ||
+                                    lastplace.nx - nx == lastplace.ny - ny ||
+                                    lastplace.nx - nx == -(lastplace.ny - ny))
+                                {
+                                    PaintForXY(nx, ny, Color.DodgerBlue);
+                                    NextMove(ref currentMove);
+                                }
                             }
                         }
                     }
@@ -309,6 +327,29 @@ namespace AmazonChessGUI
             Invalidate();
         }
 
+        void MovePaint(Move move)
+        {
+            ChessPiece pieceSource = Piece(move.source);
+            ChessPiece pieceDest = Piece(move.dest);
+            ChessPiece pieceArrow = Piece(move.arrow);
+
+            pieceDest.Color = pieceSource.Color;
+            pieceDest.IsOk = true;
+
+            pieceSource.Color = Color.Empty;
+            pieceSource.IsOk = false;
+
+            pieceArrow.Color = Color.DodgerBlue;
+            pieceArrow.IsOk = true;
+
+            Invalidate();
+        }
+
+        void Flush()
+        {
+
+        }
+
         ChessPiece[,] _Matrix;
 
         private void InitMatrix()
@@ -320,8 +361,7 @@ namespace AmazonChessGUI
                 _Matrix[i / Col, i % Col] = new ChessPiece
                 {
                     Color = Color.Black,
-                    IsOk = false,
-                    Step = 0
+                    IsOk = false
                 };
             }
         }
@@ -331,6 +371,5 @@ namespace AmazonChessGUI
     {
         public Color Color { set; get; }
         public bool IsOk { set; get; }
-        public int Step { set; get; }
     }
 }
