@@ -56,10 +56,10 @@ namespace AmazonChessGUI
             PaintForXY(5, 7, color);
             PaintForXY(7, 5, color);
 
-            foreach(var move in Game.GetMoves())
-            {
-                MovePaint(move);
-            }
+            //foreach(var move in Game.GetMoves())
+            //{
+            //    MovePaint(move);
+            //}
         }
 
         /// <summary>
