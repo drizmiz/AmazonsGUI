@@ -18,13 +18,13 @@ namespace AmazonChessGUI
         {
             Game = game;
             InitializeComponent();
-
-            chessTable.InitGame(game, this);
         }
 
         private void SinglePlayerForm_Load(object sender, EventArgs e)
         {
             waitingLabel.Visible = false;
+
+            chessTable.InitGame(Game, this);
         }
 
         #region 响应鼠标拖拽

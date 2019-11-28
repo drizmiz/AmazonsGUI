@@ -20,6 +20,8 @@ namespace AmazonChessGUI
         public ChessTable()
         {
             InitializeComponent();
+            InitMatrix();
+
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, true);
@@ -36,8 +38,6 @@ namespace AmazonChessGUI
 
             selected.nx = -1;
             selected.ny = -1;
-
-            InitMatrix();
             
             foreach(Move move in Game.GetMoves())
             {
@@ -66,6 +66,7 @@ namespace AmazonChessGUI
             //{
             //    MovePaint(move);
             //}
+            Invalidate();
         }
 
         /// <summary>
@@ -277,8 +278,34 @@ namespace AmazonChessGUI
 
         public void AutoMoveAndPaint()
         {
+            WhoWins result = CheckIfWins();
+            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
+                (currentMove == WhoseMove.blackMove && result == WhoWins.white))
+            {
+                MessageBox.Show("恭喜你，你赢了！", "YOU WIN", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
+                (currentMove == WhoseMove.blackMove && result == WhoWins.black))
+            {
+                MessageBox.Show("不幸，你输了。", "YOU LOSE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             if (!Game.AutoMoveNext(spf))
                 throw new Exception("bad call");
+            result = CheckIfWins();
+            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
+                (currentMove == WhoseMove.blackMove && result == WhoWins.white))
+            {
+                MessageBox.Show("恭喜你，你赢了！", "YOU WIN", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
+                (currentMove == WhoseMove.blackMove && result == WhoWins.black))
+            {
+                MessageBox.Show("不幸，你输了。", "YOU LOSE", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
         }
 
         public void CompleteMove()
@@ -403,6 +430,40 @@ namespace AmazonChessGUI
                     break;
             }
 
+        }
+
+        enum WhoWins
+        {
+            black,
+            white,
+            unknown
+        }
+        WhoWins CheckIfWins()
+        {
+            bool blacklose = true, whitelose = true ;
+            for (int nx = 0; nx < 8; ++nx)
+                for (int ny = 0; ny < 8; ++ny)
+                {
+                    for (int i = 0; i < 8; ++i)
+                        for (int j = 0; j < 8; ++j)
+                        {
+                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.Black)
+                                if (ValidMove(i, j, nx, ny))
+                                {
+                                    blacklose = false;
+                                }
+                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.White)
+                                if (ValidMove(i, j, nx, ny))
+                                {
+                                    whitelose = false;
+                                }
+                        }
+                }
+            if (blacklose)
+                return WhoWins.white;
+            if (whitelose)
+                return WhoWins.black;
+            return WhoWins.unknown;
         }
 
         void ChessTable_Resize(object sender, EventArgs e)
