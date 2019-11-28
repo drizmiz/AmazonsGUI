@@ -343,13 +343,11 @@ namespace AmazonChessGUI
                             ChessPiece piece = Piece(nx, ny);
                             if (!piece.IsOk)
                             {
-                                if (lastplace.nx == nx || lastplace.ny == ny ||
-                                    lastplace.nx - nx == lastplace.ny - ny ||
-                                    lastplace.nx - nx == -(lastplace.ny - ny))
+                                if (ValidMove(lastplace.nx, lastplace.ny, nx, ny))
                                 {
                                     PaintForXY(nx, ny, Color.DodgerBlue);
                                     OnPaint(new PaintEventArgs(
-                                        CreateGraphics(), 
+                                        CreateGraphics(),
                                         new Rectangle(0, 0, Width, Height)));
 
                                     Game.Text += nx + " " + ny + Environment.NewLine;

@@ -87,10 +87,11 @@ namespace AmazonChessGUI
 
         private void HelpButton_Click(object sender, EventArgs e)
         {
-
+            var form = new HelpForm();
+            form.Show();
         }
 
-        private void regretOneStep()
+        private void RegretOneStep()
         {
             if (Game.Text == "") return;
 
@@ -136,13 +137,13 @@ namespace AmazonChessGUI
         {
             if (chessTable.currentMove == ChessTable.WhoseMove.blackMove ||
                 chessTable.currentMove == ChessTable.WhoseMove.whiteMove)
-                regretOneStep();
-            regretOneStep();
+                RegretOneStep();
+            RegretOneStep();
         }
 
         private void HintButton_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private void LoadButton_Click(object sender, EventArgs e)

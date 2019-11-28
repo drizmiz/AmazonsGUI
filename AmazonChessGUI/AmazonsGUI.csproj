@@ -61,6 +61,12 @@
     <Compile Include="ChessTable.Designer.cs">
       <DependentUpon>ChessTable.cs</DependentUpon>
     </Compile>
+    <Compile Include="HelpForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HelpForm.Designer.cs">
+      <DependentUpon>HelpForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="LoadPrev.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -83,6 +89,9 @@
     <EmbeddedResource Include="ChessTable.resx">
       <DependentUpon>ChessTable.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HelpForm.resx">
+      <DependentUpon>HelpForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LoadPrev.resx">
       <DependentUpon>LoadPrev.cs</DependentUpon>
