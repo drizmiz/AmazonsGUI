@@ -82,14 +82,18 @@ namespace AmazonChessGUI
             {
                 OpenFileDialog dialog = new OpenFileDialog
                 {
-                    DefaultExt = ".amz"
+                    Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
+                    "文本文件(*.txt)|*.txt" +
+                    "|所有文件(*.*)|*.*",
+                    DefaultExt = "amz"
                 };
                 dialog.ShowDialog();
                 path = dialog.FileName;
                 dialog.Dispose();
+                if (path == "") return;
             }
             ChessGame game = LoadAMZ.LoadGame(path);
-
+            if (game == null) return;
             new Thread((ThreadStart)delegate
             {
                 Application.Run(new SinglePlayerForm(game));

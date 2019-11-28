@@ -19,7 +19,12 @@ namespace AmazonChessGUI
             Game = game;
             InitializeComponent();
 
-           // chessTable1.initGame(game);
+            chessTable1.initGame(game, this);
+        }
+
+        private void SinglePlayerForm_Load(object sender, EventArgs e)
+        {
+            waitingLabel.Visible = false;
         }
 
         #region 响应鼠标拖拽
@@ -109,5 +114,6 @@ namespace AmazonChessGUI
         {
 
         }
+
     }
 }

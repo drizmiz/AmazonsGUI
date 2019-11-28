@@ -38,6 +38,7 @@
             this.exitButton = new System.Windows.Forms.Button();
             this.reverseButton = new System.Windows.Forms.Button();
             this.chessTable1 = new AmazonChessGUI.ChessTable();
+            this.waitingLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // saveButton
@@ -128,12 +129,23 @@
             this.chessTable1.TabIndex = 0;
             this.chessTable1.Vertical = 9;
             // 
+            // waitingLabel
+            // 
+            this.waitingLabel.AutoSize = true;
+            this.waitingLabel.Font = new System.Drawing.Font("Consolas", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.waitingLabel.Location = new System.Drawing.Point(158, 399);
+            this.waitingLabel.Name = "waitingLabel";
+            this.waitingLabel.Size = new System.Drawing.Size(110, 22);
+            this.waitingLabel.TabIndex = 9;
+            this.waitingLabel.Text = "Waiting...";
+            // 
             // SinglePlayerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Peru;
             this.ClientSize = new System.Drawing.Size(498, 444);
+            this.Controls.Add(this.waitingLabel);
             this.Controls.Add(this.reverseButton);
             this.Controls.Add(this.exitButton);
             this.Controls.Add(this.helpButton);
@@ -145,12 +157,14 @@
             this.Controls.Add(this.chessTable1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.HelpButton = true;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("timg")));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "SinglePlayerForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Let\'s Play Amazons!";
+            this.Load += new System.EventHandler(this.SinglePlayerForm_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -165,5 +179,6 @@
         private System.Windows.Forms.Button helpButton;
         private System.Windows.Forms.Button exitButton;
         private System.Windows.Forms.Button reverseButton;
+        public System.Windows.Forms.Label waitingLabel;
     }
 }

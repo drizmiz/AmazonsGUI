@@ -7,6 +7,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace AmazonChessGUI
 {
@@ -46,38 +47,21 @@ namespace AmazonChessGUI
                 if (MessageBox.Show("文件不存在，是否重试？", "文件不存在",
                     MessageBoxButtons.RetryCancel, MessageBoxIcon.Error, MessageBoxDefaultButton.Button2)
                     == DialogResult.Cancel)
-                    if (MessageBox.Show("是否开始新对局？", "新对局",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1)
-                       == DialogResult.Yes)
-                        return new ChessGame();
-                    else
-                        throw new Exception("file doesn't exist");
+                    return null;
                 else
                     return LoadGame(filename);
             }
             catch (Exception)
             {
-                throw new Exception("can not read");
+                MessageBox.Show("读文件失败！", "错误", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
             }
             return game;
         }
         static public void LoadStep(ref ChessGame game)
         {
 
-        }
-    }
-
-    static class RunProcess
-    {
-        static public Process StartProcess(out StreamReader cout,out StreamWriter cin, string path, string arg)
-        {
-            Process process = new Process();   
-            ProcessStartInfo startInfo = new ProcessStartInfo(path, arg.Trim());
-            process.StartInfo = startInfo;
-            process.Start();
-            cout = process.StandardOutput;
-            cin = process.StandardInput;
-            return process;
         }
     }
 
@@ -135,6 +119,51 @@ namespace AmazonChessGUI
             }
 
             return ret;
+        }
+
+        public bool AutoMoveNext(SinglePlayerForm form)
+        {
+            try
+            {
+                ProcessStartInfo info = new ProcessStartInfo
+                {
+                    FileName = "amazons_recover.exe",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true
+                };
+                Process processer = new Process
+                {
+                    StartInfo = info
+                };
+                processer.Start();
+                var cout = processer.StandardOutput;
+                var cin = processer.StandardInput;
+
+                int totalMoveCount = Text.Split('\n').Length - 1;
+                int turnCount = totalMoveCount / 2 + 1;
+                cin.Write(turnCount + Environment.NewLine);
+                if (totalMoveCount % 2 == 0)
+                    cin.Write("-1 -1 -1 -1 -1 -1" + Environment.NewLine);
+                cin.Write(Text);
+
+                form.waitingLabel.Visible = true;
+                Thread.Sleep(1100);
+                form.waitingLabel.Visible = false;
+
+                string nextMove = cout.ReadLine();
+                Text += nextMove.Trim(null) + Environment.NewLine;
+
+                if (!processer.HasExited)
+                    processer.Kill();
+                processer.Close();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

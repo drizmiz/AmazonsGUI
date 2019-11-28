@@ -13,6 +13,8 @@ namespace AmazonChessGUI
 {
     public partial class ChessTable : UserControl
     {
+        private SinglePlayerForm spf;
+
         private ChessGame Game { get; set; }
 
         private bool inited = false;
@@ -29,9 +31,10 @@ namespace AmazonChessGUI
             this.Load += ChessTable_Load;
         }
 
-        public void initGame(ChessGame game)
+        public void initGame(ChessGame game,SinglePlayerForm form)
         {
             Game = game;
+            spf = form;
 
             selected.nx = -1;
             selected.ny = -1;
@@ -66,8 +69,6 @@ namespace AmazonChessGUI
         /// 半径的平方值，用来确定是否容忍这次放置
         /// </summary>
         private float _RadiusSquare = 0;
-
-        private int _Step = 1;
 
         /// <summary>
         /// 纵线数
@@ -106,8 +107,6 @@ namespace AmazonChessGUI
 
         [Description("线的颜色")]
         public Color ColorOfLine = Color.Black;
-
-
 
         protected override void OnPaint(PaintEventArgs pe)
         {
@@ -211,6 +210,24 @@ namespace AmazonChessGUI
             move = (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (--move);
         }
 
+        bool ValidMove(int prev_nx, int prev_ny, int nx, int ny)
+        {
+            int[] moveDirection = { -1, 1, -8, 8, -7, 7, -9, 9 };
+            foreach (var direction in moveDirection)
+            {
+                for (int step = 1; ; ++step)
+                {
+                    int idx = prev_nx * 8 + prev_ny + step * direction;
+                    int x = idx / 8; int y = idx % 8;
+                    if (x < 0 || x >= 8 || y < 0 || y >= 8 || Piece(x, y).IsOk)
+                        break;
+                    if (x == nx && y == ny)
+                        return true;
+                }
+            }
+            return false;
+        }
+
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
         {
             switch (e.Button)
@@ -234,7 +251,43 @@ namespace AmazonChessGUI
                     {
                         if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
                         {
-                            if (!validSelect) // 未选中
+                            if (validSelect) //已选中
+                            {
+                                if (ValidMove(selected.nx, selected.ny, nx, ny))
+                                {
+                                    if (!(selected.nx == nx && selected.ny == ny))
+                                    {
+                                        ChessPiece piece = Piece(selected.nx, selected.ny);
+                                        piece.IsOk = false;
+
+                                        if (currentMove == WhoseMove.blackMove)
+                                            PaintForXY(nx, ny, Color.Black);
+                                        else
+                                            PaintForXY(nx, ny, Color.White);
+
+                                        Game.Text +=
+                                            selected.nx + " " + selected.ny + " "
+                                            + nx + " " + ny + " ";
+
+                                        NextMove(ref currentMove);
+                                        lastplace.nx = nx;
+                                        lastplace.ny = ny;
+                                        validSelect = false;
+                                    }
+                                }
+                                else
+                                {
+                                    ChessPiece piece = Piece(selected.nx, selected.ny);
+                                    if (currentMove == WhoseMove.blackMove)
+                                        piece.Color = Color.Black;
+                                    else if (currentMove == WhoseMove.whiteMove)
+                                        piece.Color = Color.White;
+                                    validSelect = false;
+
+                                    Invalidate();
+                                }
+                            }
+                            // select
                             {
                                 ChessPiece piece = Piece(nx, ny);
                                 if (piece.IsOk)
@@ -261,28 +314,6 @@ namespace AmazonChessGUI
                                     }
                                 }
                             }
-                            else //已选中
-                            {
-                                if (selected.nx == nx || selected.ny == ny ||
-                                    selected.nx - nx == selected.ny - ny ||
-                                    selected.nx - nx == -(selected.ny - ny))
-                                {
-                                    ChessPiece piece = Piece(selected.nx, selected.ny);
-                                    piece.IsOk = false;
-
-                                    _Step++;
-
-                                    if (currentMove == WhoseMove.blackMove)
-                                        PaintForXY(nx, ny, Color.Black);
-                                    else
-                                        PaintForXY(nx, ny, Color.White);
-
-                                    NextMove(ref currentMove);
-                                    lastplace.nx = nx;
-                                    lastplace.ny = ny;
-                                    validSelect = false;
-                                }
-                            }
                         }
                         else        // 该放障碍物了
                         {
@@ -294,6 +325,18 @@ namespace AmazonChessGUI
                                     lastplace.nx - nx == -(lastplace.ny - ny))
                                 {
                                     PaintForXY(nx, ny, Color.DodgerBlue);
+                                    OnPaint(new PaintEventArgs(
+                                        CreateGraphics(), 
+                                        new Rectangle(0, 0, Width, Height)));
+
+                                    Game.Text += nx + " " + ny + Environment.NewLine;
+
+                                    if (!Game.AutoMoveNext(spf))
+                                        throw new Exception("bad call");
+                                    MovePaint(Game.GetMoves().Last());
+                                    NextMove(ref currentMove);
+                                    NextMove(ref currentMove);
+
                                     NextMove(ref currentMove);
                                 }
                             }
@@ -309,9 +352,9 @@ namespace AmazonChessGUI
                         if (validSelect)
                         {
                             ChessPiece piece = Piece(selected.nx, selected.ny);
-                            if (currentMove == WhoseMove.blackArrow)
+                            if (currentMove == WhoseMove.blackMove)
                                 piece.Color = Color.Black;
-                            else if (currentMove == WhoseMove.whiteArrow)
+                            else if (currentMove == WhoseMove.whiteMove)
                                 piece.Color = Color.White;
                             validSelect = false;
 
