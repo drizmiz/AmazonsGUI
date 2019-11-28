@@ -13,13 +13,22 @@ namespace AmazonChessGUI
 {
     static class SaveAMZ
     {
-        static public void SaveGame(string filename, ChessGame game)
+        static public bool SaveGame(string filename, in ChessGame game)
         {
-
-        }
-        static public void SaveStep(ChessGame game)
-        {
-
+            try
+            {
+                StreamWriter reader = new StreamWriter(filename, false);
+                reader.Write(game.Text);
+                reader.Close();
+                // stream.Close();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("写文件失败！", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            return true;
         }
     }
     static class LoadAMZ
@@ -30,15 +39,15 @@ namespace AmazonChessGUI
             try
             {
                 StreamReader reader = new StreamReader(filename);
-                int turn_cnt = Convert.ToInt32(reader.ReadLine());
+                /*
                 Stack<string> remainders = new Stack<string>();
                 for (; !reader.EndOfStream;)
                 {
                     string remainder = reader.ReadLine();
                     remainders.Push(remainder);
                 }
-
-                game.Text = reader.ReadToEnd();
+                */
+                game.Text = reader.ReadToEnd().Trim() + Environment.NewLine;
                 reader.Close();
                 // stream.Close();
             }
@@ -58,10 +67,6 @@ namespace AmazonChessGUI
                 return null;
             }
             return game;
-        }
-        static public void LoadStep(ref ChessGame game)
-        {
-
         }
     }
 
@@ -149,8 +154,10 @@ namespace AmazonChessGUI
                 cin.Write(Text);
 
                 form.waitingLabel.Visible = true;
+                form.Invalidate();
                 Thread.Sleep(1100);
                 form.waitingLabel.Visible = false;
+                form.Invalidate();
 
                 string nextMove = cout.ReadLine();
                 Text += nextMove.Trim(null) + Environment.NewLine;

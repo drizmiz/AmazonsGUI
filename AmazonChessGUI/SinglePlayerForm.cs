@@ -5,7 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace AmazonChessGUI
@@ -19,7 +19,7 @@ namespace AmazonChessGUI
             Game = game;
             InitializeComponent();
 
-            chessTable1.initGame(game, this);
+            chessTable1.InitGame(game, this);
         }
 
         private void SinglePlayerForm_Load(object sender, EventArgs e)
@@ -102,17 +102,69 @@ namespace AmazonChessGUI
 
         private void LoadButton_Click(object sender, EventArgs e)
         {
-
+            string path;
+            using (OpenFileDialog dialog = new OpenFileDialog
+            {
+                Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
+                    "文本文件(*.txt)|*.txt" +
+                    "|所有文件(*.*)|*.*",
+                FileName = "quick_save.amz",
+                InitialDirectory = Environment.CurrentDirectory,
+                DefaultExt = "amz"
+            })
+            {
+                if (dialog.ShowDialog() == DialogResult.Cancel)
+                    return;
+                path = dialog.FileName;
+            }
+            if (path == "") return;
+            ChessGame game = LoadAMZ.LoadGame(path);
+            if (game == null) return;
+            var newTrd = new Thread((ThreadStart)delegate
+             {
+                 Application.Run(new SinglePlayerForm(game));
+             });
+            newTrd.SetApartmentState(ApartmentState.STA);
+            newTrd.Start();
+            Close();
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-
+            if(!(chessTable1.currentMove == ChessTable.WhoseMove.blackMove||
+                chessTable1.currentMove == ChessTable.WhoseMove.whiteMove))
+            {
+                MessageBox.Show("请在完成当前移动（放置Arrow）后再保存~", "提示",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            string path;
+            using (SaveFileDialog dialog = new SaveFileDialog
+            {
+                Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
+                "文本文件(*.txt)|*.txt" +
+                "|所有文件(*.*)|*.*",
+                FileName = "quick_save.amz",
+                InitialDirectory = Environment.CurrentDirectory,
+                DefaultExt = "amz"
+            })
+            {
+                dialog.ShowDialog();
+                path = dialog.FileName;
+            }
+            if (path == "") return;
+            SaveAMZ.SaveGame(path, Game);
         }
 
         private void NewButton_Click(object sender, EventArgs e)
         {
-
+            var newTrd = new Thread((ThreadStart)delegate
+            {
+                Application.Run(new SinglePlayerForm(new ChessGame()));
+            });
+            newTrd.SetApartmentState(ApartmentState.STA);
+            newTrd.Start();
+            Close();
         }
 
     }

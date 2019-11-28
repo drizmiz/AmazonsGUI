@@ -17,8 +17,6 @@ namespace AmazonChessGUI
 
         private ChessGame Game { get; set; }
 
-        private bool inited = false;
-
         public ChessTable()
         {
             InitializeComponent();
@@ -31,7 +29,7 @@ namespace AmazonChessGUI
             this.Load += ChessTable_Load;
         }
 
-        public void initGame(ChessGame game,SinglePlayerForm form)
+        public void InitGame(ChessGame game,SinglePlayerForm form)
         {
             Game = game;
             spf = form;
@@ -41,6 +39,11 @@ namespace AmazonChessGUI
 
             InitMatrix();
             
+            foreach(Move move in Game.GetMoves())
+            {
+                MovePaint(move);
+            }
+
             Invalidate();
         }
 
@@ -115,7 +118,7 @@ namespace AmazonChessGUI
 
             _RadiusSquare = (tile_width * tile_width + tile_height * tile_height) / 9;
 
-            pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+            pe.Graphics.SmoothingMode = SmoothingMode.HighSpeed;
 
             using (Pen pen = new Pen(new SolidBrush(ColorOfLine), 2))
             {
@@ -134,6 +137,8 @@ namespace AmazonChessGUI
                 }
             }
 
+            pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+
             for (int row = 0; row < this._horizontal - 1; row++)
             {
                 for (int col = 0; col < this._vertical - 1; col++)
@@ -142,7 +147,7 @@ namespace AmazonChessGUI
 
                     if (piec.IsOk)
                     {
-                        using (Pen pen = new Pen(Color.Black,(float)3.0))
+                        using (Pen pen = new Pen(Color.Black,(float)4.0))
                         {
                             using (SolidBrush solidBrush = new SolidBrush(piec.Color))
                             {
@@ -189,7 +194,7 @@ namespace AmazonChessGUI
         Chess lastplace;
         bool validSelect = false;
 
-        enum WhoseMove
+        public enum WhoseMove
         {
             blackMove = 0,
             blackArrow = 1,
@@ -198,7 +203,7 @@ namespace AmazonChessGUI
             invalid = 4
         }
 
-        WhoseMove currentMove = WhoseMove.blackMove;
+        public WhoseMove currentMove = WhoseMove.blackMove;
 
         void NextMove(ref WhoseMove move)
         {

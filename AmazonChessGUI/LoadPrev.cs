@@ -74,39 +74,47 @@ namespace AmazonChessGUI
         private void LoadButton_Click(object sender, EventArgs e)
         {
             string path;
+            /*
             if (MessageBox.Show("是否进行快速载入？", "提示",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question,
                 MessageBoxDefaultButton.Button1) == DialogResult.Yes)
-                path = Environment.CurrentDirectory + "\\prev.amz";
+                path = Environment.CurrentDirectory + "\\quick_save.amz";
             else
+            */
+            using (OpenFileDialog dialog = new OpenFileDialog
             {
-                OpenFileDialog dialog = new OpenFileDialog
-                {
-                    Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
+                Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
                     "文本文件(*.txt)|*.txt" +
                     "|所有文件(*.*)|*.*",
-                    DefaultExt = "amz"
-                };
-                dialog.ShowDialog();
+                FileName = "quick_save.amz",
+                InitialDirectory = Environment.CurrentDirectory,
+                DefaultExt = "amz"
+            })
+            {
+                if (dialog.ShowDialog() == DialogResult.Cancel)
+                    return;
                 path = dialog.FileName;
-                dialog.Dispose();
-                if (path == "") return;
             }
+            if (path == "") return;
             ChessGame game = LoadAMZ.LoadGame(path);
             if (game == null) return;
-            new Thread((ThreadStart)delegate
+            var newTrd = new Thread((ThreadStart)delegate
             {
                 Application.Run(new SinglePlayerForm(game));
-            }).Start();
+            });
+            newTrd.SetApartmentState(ApartmentState.STA);
+            newTrd.Start();
             Close();
         }
 
         private void NewButton_Click(object sender, EventArgs e)
         {
-            new Thread((ThreadStart)delegate
+            var newTrd = new Thread((ThreadStart)delegate
             {
                 Application.Run(new SinglePlayerForm(new ChessGame()));
-            }).Start();
+            });
+            newTrd.SetApartmentState(ApartmentState.STA);
+            newTrd.Start();
             Close();
         }
     }
