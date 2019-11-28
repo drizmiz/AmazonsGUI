@@ -141,9 +141,25 @@ namespace AmazonChessGUI
             RegretOneStep();
         }
 
+        public void ManuallyRepaint()
+        {
+            OnPaint(new PaintEventArgs(
+                CreateGraphics(),
+                new Rectangle(0, 0, Width, Height)));
+        }
+
         private void HintButton_Click(object sender, EventArgs e)
         {
-            
+            if (chessTable.currentMove != ChessTable.WhoseMove.blackMove &&
+                chessTable.currentMove != ChessTable.WhoseMove.whiteMove)
+            {
+                HintMessageShow();
+                return;
+            }
+            chessTable.AutoMoveAndPaint();
+            chessTable.ManuallyRepaint();
+            Thread.Sleep(3000);
+            chessTable.AutoMoveAndPaint();
         }
 
         private void LoadButton_Click(object sender, EventArgs e)
@@ -213,5 +229,21 @@ namespace AmazonChessGUI
             Close();
         }
 
+        private void ReverseButton_Click(object sender, EventArgs e)
+        {
+            if (chessTable.currentMove != ChessTable.WhoseMove.blackMove &&
+                chessTable.currentMove != ChessTable.WhoseMove.whiteMove)
+            {
+                HintMessageShow();
+                return;
+            }
+            chessTable.AutoMoveAndPaint();
+        }
+
+        private void HintMessageShow()
+        {
+            MessageBox.Show("此操作仅当你还没有做本回合的移动时有效" + Environment.NewLine + "可以单击“悔棋”按钮来撤回这一移动", "提示",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
     }
 }

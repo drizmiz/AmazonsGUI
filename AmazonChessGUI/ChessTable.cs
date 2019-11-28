@@ -143,13 +143,30 @@ namespace AmazonChessGUI
             {
                 for (int col = 0; col < this._vertical - 1; col++)
                 {
-                    ChessPiece piec = _Matrix[row, col];
+                    ChessPiece piece = _Matrix[row, col];
 
-                    if (piec.IsOk)
+                    if (piece.IsOk)
                     {
                         using (Pen pen = new Pen(Color.Black,(float)4.0))
                         {
-                            using (SolidBrush solidBrush = new SolidBrush(piec.Color))
+                            using (SolidBrush solidBrush = new SolidBrush(piece.Color))
+                            {
+                                float x = (float)((col + 0.5 + 0.2) * tile_width);
+                                float y = (float)((row + 0.5 + 0.2) * tile_height);
+                                float width = (float)(tile_width * 0.6);
+                                float height = (float)(tile_height * 0.6);
+
+                                pe.Graphics.DrawEllipse(pen, x, y, width, height);
+                                pe.Graphics.FillEllipse(solidBrush, x, y, width, height);
+                                base.OnPaint(pe);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        using (Pen pen = new Pen(Color.Peru, (float)0.0))
+                        {
+                            using (SolidBrush solidBrush = new SolidBrush(Color.Peru))
                             {
                                 float x = (float)((col + 0.5 + 0.2) * tile_width);
                                 float y = (float)((row + 0.5 + 0.2) * tile_height);
@@ -164,6 +181,13 @@ namespace AmazonChessGUI
                     }
                 }
             }
+        }
+
+        public void ManuallyRepaint()
+        {
+            OnPaint(new PaintEventArgs(
+                CreateGraphics(),
+                new Rectangle(0, 0, Width, Height)));
         }
 
         public ref ChessPiece Piece(int nx, int ny)
@@ -249,6 +273,19 @@ namespace AmazonChessGUI
                     Invalidate();
                 }
             }
+        }
+
+        public void AutoMoveAndPaint()
+        {
+            if (!Game.AutoMoveNext(spf))
+                throw new Exception("bad call");
+        }
+
+        public void CompleteMove()
+        {
+            MovePaint(Game.GetMoves().Last());
+            NextMove(ref currentMove);
+            NextMove(ref currentMove);
         }
 
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
@@ -346,17 +383,11 @@ namespace AmazonChessGUI
                                 if (ValidMove(lastplace.nx, lastplace.ny, nx, ny))
                                 {
                                     PaintForXY(nx, ny, Color.DodgerBlue);
-                                    OnPaint(new PaintEventArgs(
-                                        CreateGraphics(),
-                                        new Rectangle(0, 0, Width, Height)));
+                                    ManuallyRepaint();
 
                                     Game.Text += nx + " " + ny + Environment.NewLine;
 
-                                    if (!Game.AutoMoveNext(spf))
-                                        throw new Exception("bad call");
-                                    MovePaint(Game.GetMoves().Last());
-                                    NextMove(ref currentMove);
-                                    NextMove(ref currentMove);
+                                    AutoMoveAndPaint();
 
                                     NextMove(ref currentMove);
                                 }
@@ -371,6 +402,7 @@ namespace AmazonChessGUI
                     UnselectSelected();
                     break;
             }
+
         }
 
         void ChessTable_Resize(object sender, EventArgs e)
@@ -394,11 +426,6 @@ namespace AmazonChessGUI
             pieceArrow.IsOk = true;
 
             Invalidate();
-        }
-
-        void Flush()
-        {
-
         }
 
         ChessPiece[,] _Matrix;

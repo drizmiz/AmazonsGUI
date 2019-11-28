@@ -37,8 +37,8 @@
             this.helpButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
             this.reverseButton = new System.Windows.Forms.Button();
-            this.chessTable = new AmazonChessGUI.ChessTable();
             this.waitingLabel = new System.Windows.Forms.Label();
+            this.chessTable = new AmazonChessGUI.ChessTable();
             this.SuspendLayout();
             // 
             // saveButton
@@ -117,17 +117,9 @@
             this.reverseButton.Name = "reverseButton";
             this.reverseButton.Size = new System.Drawing.Size(75, 23);
             this.reverseButton.TabIndex = 8;
-            this.reverseButton.Text = "翻转";
+            this.reverseButton.Text = "交换";
             this.reverseButton.UseVisualStyleBackColor = true;
-            // 
-            // chessTable1
-            // 
-            this.chessTable.Horizontal = 9;
-            this.chessTable.Location = new System.Drawing.Point(17, 17);
-            this.chessTable.Name = "chessTable1";
-            this.chessTable.Size = new System.Drawing.Size(382, 375);
-            this.chessTable.TabIndex = 0;
-            this.chessTable.Vertical = 9;
+            this.reverseButton.Click += new System.EventHandler(this.ReverseButton_Click);
             // 
             // waitingLabel
             // 
@@ -138,6 +130,15 @@
             this.waitingLabel.Size = new System.Drawing.Size(110, 22);
             this.waitingLabel.TabIndex = 9;
             this.waitingLabel.Text = "Waiting...";
+            // 
+            // chessTable
+            // 
+            this.chessTable.Horizontal = 9;
+            this.chessTable.Location = new System.Drawing.Point(17, 17);
+            this.chessTable.Name = "chessTable";
+            this.chessTable.Size = new System.Drawing.Size(382, 375);
+            this.chessTable.TabIndex = 0;
+            this.chessTable.Vertical = 9;
             // 
             // SinglePlayerForm
             // 
@@ -170,7 +171,7 @@
 
         #endregion
 
-        private ChessTable chessTable;
+        public ChessTable chessTable;
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.Button loadButton;
         private System.Windows.Forms.Button newButton;
