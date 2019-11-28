@@ -166,7 +166,7 @@ namespace AmazonChessGUI
             }
         }
 
-        ref ChessPiece Piece(int nx, int ny)
+        public ref ChessPiece Piece(int nx, int ny)
         {
             return ref _Matrix[ny, nx];
         }
@@ -205,12 +205,12 @@ namespace AmazonChessGUI
 
         public WhoseMove currentMove = WhoseMove.blackMove;
 
-        void NextMove(ref WhoseMove move)
+        static public void NextMove(ref WhoseMove move)
         {
             move = (++move == WhoseMove.invalid) ? WhoseMove.blackMove : move;
         }
 
-        void PrevMove(ref WhoseMove move)
+        static public void PrevMove(ref WhoseMove move)
         {
             move = (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (--move);
         }
@@ -231,6 +231,24 @@ namespace AmazonChessGUI
                 }
             }
             return false;
+        }
+
+        public void UnselectSelected()
+        {
+            if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
+            {
+                if (validSelect)
+                {
+                    ChessPiece piece = Piece(selected.nx, selected.ny);
+                    if (currentMove == WhoseMove.blackMove)
+                        piece.Color = Color.Black;
+                    else if (currentMove == WhoseMove.whiteMove)
+                        piece.Color = Color.White;
+                    validSelect = false;
+
+                    Invalidate();
+                }
+            }
         }
 
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
@@ -352,20 +370,7 @@ namespace AmazonChessGUI
 
                 case MouseButtons.Right:
                     // right -> unselect
-                    if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
-                    {
-                        if (validSelect)
-                        {
-                            ChessPiece piece = Piece(selected.nx, selected.ny);
-                            if (currentMove == WhoseMove.blackMove)
-                                piece.Color = Color.Black;
-                            else if (currentMove == WhoseMove.whiteMove)
-                                piece.Color = Color.White;
-                            validSelect = false;
-
-                            Invalidate();
-                        }
-                    }
+                    UnselectSelected();
                     break;
             }
         }

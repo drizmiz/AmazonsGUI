@@ -37,7 +37,7 @@
             this.helpButton = new System.Windows.Forms.Button();
             this.exitButton = new System.Windows.Forms.Button();
             this.reverseButton = new System.Windows.Forms.Button();
-            this.chessTable1 = new AmazonChessGUI.ChessTable();
+            this.chessTable = new AmazonChessGUI.ChessTable();
             this.waitingLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
@@ -122,12 +122,12 @@
             // 
             // chessTable1
             // 
-            this.chessTable1.Horizontal = 9;
-            this.chessTable1.Location = new System.Drawing.Point(17, 17);
-            this.chessTable1.Name = "chessTable1";
-            this.chessTable1.Size = new System.Drawing.Size(382, 375);
-            this.chessTable1.TabIndex = 0;
-            this.chessTable1.Vertical = 9;
+            this.chessTable.Horizontal = 9;
+            this.chessTable.Location = new System.Drawing.Point(17, 17);
+            this.chessTable.Name = "chessTable1";
+            this.chessTable.Size = new System.Drawing.Size(382, 375);
+            this.chessTable.TabIndex = 0;
+            this.chessTable.Vertical = 9;
             // 
             // waitingLabel
             // 
@@ -154,7 +154,7 @@
             this.Controls.Add(this.newButton);
             this.Controls.Add(this.loadButton);
             this.Controls.Add(this.saveButton);
-            this.Controls.Add(this.chessTable1);
+            this.Controls.Add(this.chessTable);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -170,7 +170,7 @@
 
         #endregion
 
-        private ChessTable chessTable1;
+        private ChessTable chessTable;
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.Button loadButton;
         private System.Windows.Forms.Button newButton;

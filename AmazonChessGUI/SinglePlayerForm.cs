@@ -19,7 +19,7 @@ namespace AmazonChessGUI
             Game = game;
             InitializeComponent();
 
-            chessTable1.InitGame(game, this);
+            chessTable.InitGame(game, this);
         }
 
         private void SinglePlayerForm_Load(object sender, EventArgs e)
@@ -90,9 +90,54 @@ namespace AmazonChessGUI
 
         }
 
+        private void regretOneStep()
+        {
+            if (Game.Text == "") return;
+
+            string[] moves = Game.Text.Trim().Split('\n');
+            string lastMove = moves.Last();
+            Game.Text = "";
+            for (int i = 0; i < moves.Length - 1; ++i)
+                Game.Text += moves[i] + Environment.NewLine;
+            string[] coordinates = lastMove.Trim().Split(' ');
+
+            if (coordinates.Length == 4 || coordinates.Length == 6)
+            {
+                ChessPiece pieceSource = chessTable.Piece(
+                    Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]));
+                ChessPiece pieceDest = chessTable.Piece(
+                    Convert.ToInt32(coordinates[2]), Convert.ToInt32(coordinates[3]));
+
+                if (coordinates.Length == 6)
+                {
+                    ChessPiece pieceArrow = chessTable.Piece(
+                        Convert.ToInt32(coordinates[4]), Convert.ToInt32(coordinates[5]));
+                    pieceArrow.Color = Color.Empty;
+                    pieceArrow.IsOk = false;
+
+                    ChessTable.PrevMove(ref chessTable.currentMove);
+                }
+
+                pieceSource.Color = pieceDest.Color;
+                pieceSource.IsOk = true;
+
+                pieceDest.Color = Color.Empty;
+                pieceDest.IsOk = false;
+
+                ChessTable.PrevMove(ref chessTable.currentMove);
+            }
+            else throw new Exception("internal error");
+
+            chessTable.UnselectSelected();
+            chessTable.Invalidate();
+        }
+
         private void RegretButton_Click(object sender, EventArgs e)
         {
-
+            if (chessTable.currentMove == ChessTable.WhoseMove.blackMove ||
+                chessTable.currentMove == ChessTable.WhoseMove.whiteMove)
+                regretOneStep();
+            regretOneStep();
         }
 
         private void HintButton_Click(object sender, EventArgs e)
@@ -131,8 +176,8 @@ namespace AmazonChessGUI
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if(!(chessTable1.currentMove == ChessTable.WhoseMove.blackMove||
-                chessTable1.currentMove == ChessTable.WhoseMove.whiteMove))
+            if(!(chessTable.currentMove == ChessTable.WhoseMove.blackMove||
+                chessTable.currentMove == ChessTable.WhoseMove.whiteMove))
             {
                 MessageBox.Show("请在完成当前移动（放置Arrow）后再保存~", "提示",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
