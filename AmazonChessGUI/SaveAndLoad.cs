@@ -141,37 +141,37 @@ namespace AmazonChessGUI
 
                 //var newTrd = new Thread((ThreadStart)delegate
                 //{
-                    ProcessStartInfo info = new ProcessStartInfo
-                    {
-                        FileName = "amazons_recover.exe",
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true
-                    };
-                    Process processer = new Process
-                    {
-                        StartInfo = info
-                    };
+                ProcessStartInfo info = new ProcessStartInfo
+                {
+                    FileName = "amazons_recover.exe",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true
+                };
+                Process processer = new Process
+                {
+                    StartInfo = info
+                };
 
-                    processer.Start();
-                    var cout = processer.StandardOutput;
-                    var cin = processer.StandardInput;
+                processer.Start();
+                var cout = processer.StandardOutput;
+                var cin = processer.StandardInput;
 
-                    int totalMoveCount = Text.Split('\n').Length - 1;
-                    int turnCount = totalMoveCount / 2 + 1;
-                    cin.Write(turnCount + Environment.NewLine);
-                    if (totalMoveCount % 2 == 0)
-                        cin.Write("-1 -1 -1 -1 -1 -1" + Environment.NewLine);
-                    cin.Write(Text);
-                    Thread.Sleep(1100);
+                int totalMoveCount = Text.Split('\n').Length - 1;
+                int turnCount = totalMoveCount / 2 + 1;
+                cin.Write(turnCount + Environment.NewLine);
+                if (totalMoveCount % 2 == 0)
+                    cin.Write("-1 -1 -1 -1 -1 -1" + Environment.NewLine);
+                cin.Write(Text);
+                Thread.Sleep(1100);
 
-                    string nextMove = cout.ReadLine();
-                    Text += nextMove.Trim(null) + Environment.NewLine;
+                string nextMove = cout.ReadLine();
+                Text += nextMove.Trim(null) + Environment.NewLine;
 
-                    if (!processer.HasExited)
-                        processer.Kill();
-                    processer.Close();
+                //if (!processer.HasExited)
+                //processer.Kill();
+                processer.Close();
                 //});
 
                 //newTrd.Start();

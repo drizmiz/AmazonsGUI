@@ -95,6 +95,8 @@ namespace AmazonChessGUI
         {
             if (Game.Text == "") return;
 
+            chessTable.UnselectSelected();
+
             string[] moves = Game.Text.Trim().Split('\n');
             string lastMove = moves.Last();
             Game.Text = "";
@@ -127,7 +129,13 @@ namespace AmazonChessGUI
 
                 ChessTable.PrevMove(ref chessTable.currentMove);
             }
-            else throw new Exception("internal error");
+            else
+            {
+                MessageBox.Show("坐标不合法！" + Environment.NewLine +
+                    "（提示：请不要用文本编辑器编辑amz文件，否则可能导致此错误）", "Internal ERROR",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
 
             chessTable.UnselectSelected();
             chessTable.Invalidate();
@@ -237,7 +245,11 @@ namespace AmazonChessGUI
                 HintMessageShow();
                 return;
             }
-            chessTable.AutoMoveAndPaint();
+            if(!chessTable.AutoMoveAndPaint())
+            {
+                ChessTable.NextMove(ref chessTable.currentMove);
+                ChessTable.NextMove(ref chessTable.currentMove);
+            }
         }
 
         private void HintMessageShow()
