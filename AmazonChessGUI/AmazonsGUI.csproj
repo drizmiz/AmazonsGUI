@@ -61,6 +61,7 @@
     <Compile Include="ChessTable.Designer.cs">
       <DependentUpon>ChessTable.cs</DependentUpon>
     </Compile>
+    <Compile Include="Game.cs" />
     <Compile Include="HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -13,9 +13,10 @@ namespace AmazonChessGUI
 {
     public partial class ChessTable : UserControl
     {
-        private SinglePlayerForm spf;
+        public ChessGame Game { get; private set; }
+        private SinglePlayerForm ParentSPF { get { return (SinglePlayerForm)ParentForm; } }
 
-        private ChessGame Game { get; set; }
+        #region Initialization
 
         public ChessTable()
         {
@@ -26,29 +27,36 @@ namespace AmazonChessGUI
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, true);
 
-            this.Resize += ChessTable_Resize;
             this.MouseClick += ChessTable_MouseClick;
             this.Load += ChessTable_Load;
         }
 
-        public void InitGame(ChessGame game,SinglePlayerForm form)
+        public bool Inited { get; private set; } = false;
+
+        public void Init(ChessGame game)
         {
             Game = game;
-            spf = form;
 
             selected.nx = -1;
             selected.ny = -1;
-            
-            foreach(Move move in Game.GetMoves())
+
+            foreach (Move move in Game.GetMoves())
             {
                 MovePaint(move);
             }
 
             Invalidate();
+
+            Inited = true;
         }
 
         private void ChessTable_Load(object sender, EventArgs e)
         {
+            if(!Inited)
+            {
+                Init(new ChessGame());
+            }
+
             Color color = Color.Black;
             PaintForXY(0, 2, color);
             PaintForXY(2, 0, color);
@@ -63,93 +71,92 @@ namespace AmazonChessGUI
             Invalidate();
         }
 
-        /// <summary>
-        /// 半径的平方值，用来确定是否容忍这次放置
-        /// </summary>
-        private float _RadiusSquare = 0;
+        #endregion
 
-        /// <summary>
-        /// 纵线数
-        /// </summary>
-        private int _vertical = 9;
-        [Description("纵线数")]
-        public int Vertical
+        // 纵线数
+        public int Vertical => 9;
+        // 横线数
+        public int Horizontal => 9;
+
+        public int Col { get { return Vertical - 1; } }
+        public int Row { get { return Horizontal - 1; } }
+
+        #region Matrix
+
+        public class ChessPiece
         {
-            get { return _vertical; }
-            set
+            public Color Color { set; get; }
+            public bool IsOk { set; get; }
+        }
+
+        ChessPiece[,] _Matrix;
+
+        public ref ChessPiece Piece(int nx, int ny) => ref _Matrix[ny, nx];
+        public ref ChessPiece Piece(ChessLocation chess) => ref _Matrix[chess.ny, chess.nx];
+
+        private void InitMatrix()
+        {
+            _Matrix = new ChessPiece[Row, Col];
+
+            for (int i = 0; i < _Matrix.Length; i++)
             {
-                _vertical = value;
-                InitMatrix();
-                Invalidate();
+                Piece(i / Col, i % Col) = new ChessPiece
+                {
+                    Color = Color.Empty,
+                    IsOk = false
+                };
             }
         }
 
-        /// <summary>
-        /// 横线数
-        /// </summary>
-        private int _horizontal = 9;
-        [Description("横线数")]
-        public int Horizontal
-        {
-            get { return _horizontal; }
-            set
-            {
-                _horizontal = value;
-                InitMatrix();
-                Invalidate();
-            }
-        }
+        #endregion
 
-        public int Col { get { return _vertical - 1; } }
-        public int Row { get { return _horizontal - 1; } }
+        #region Paint
 
-        [Description("线的颜色")]
-        public Color ColorOfLine = Color.Black;
+        private float TileWidth { get { return (float)(1.0 * Width / Vertical); } }
+        private float TileHeight { get { return (float)(1.0 * Height / Horizontal); } }
+
+        // 线的颜色
+        public Color ColorOfLine => Color.Black;
 
         protected override void OnPaint(PaintEventArgs pe)
         {
-            float tile_width = (float)(1.0 * this.Width / this._vertical);
-            float tile_height = (float)(1.0 * this.Height / this._horizontal);
-
-            _RadiusSquare = (tile_width * tile_width + tile_height * tile_height) / 9;
-
-            pe.Graphics.SmoothingMode = SmoothingMode.HighSpeed;
+            pe.Graphics.SmoothingMode = SmoothingMode.HighSpeed;    // 绘制线
 
             using (Pen pen = new Pen(new SolidBrush(ColorOfLine), 2))
             {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                for (int row = 1; row <= _horizontal; row++)
+                for (int row = 1; row <= Horizontal; row++)
                 {
-                    pe.Graphics.DrawLine(pen, (float)(tile_width * 0.5), (float)(tile_height * (row - 0.5)), (float)(tile_width * (this._vertical - 0.5)), (float)(tile_height * (row - 0.5)));
+                    pe.Graphics.DrawLine(pen, (float)(TileWidth * 0.5), (float)(TileHeight * (row - 0.5)), (float)(TileWidth * (this.Vertical - 0.5)), (float)(TileHeight * (row - 0.5)));
                     base.OnPaint(pe);
                 }
 
-                for (int col = 1; col <= _vertical; col++)
+                for (int col = 1; col <= Vertical; col++)
                 {
-                    pe.Graphics.DrawLine(pen, (float)(tile_width * (col - 0.5)), (float)(tile_height * 0.5), (float)(tile_width * (col - 0.5)), (float)(tile_height * (this._horizontal - 0.5)));
+                    pe.Graphics.DrawLine(pen, (float)(TileWidth * (col - 0.5)), (float)(TileHeight * 0.5), (float)(TileWidth * (col - 0.5)), (float)(TileHeight * (this.Horizontal - 0.5)));
                     base.OnPaint(pe);
                 }
             }
 
-            pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+            pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;     // 绘制棋子
 
-            for (int row = 0; row < this._horizontal - 1; row++)
+            for (int ny = 0; ny < Row; ny++)
             {
-                for (int col = 0; col < this._vertical - 1; col++)
+                for (int nx = 0; nx < Col; nx++)
                 {
-                    ChessPiece piece = _Matrix[row, col];
+                    ChessPiece piece = Piece(nx, ny);
 
                     if (piece.IsOk)
                     {
-                        using (Pen pen = new Pen(Color.Black,(float)4.0))
+                        using (Pen pen = new Pen(Color.Black, (float)4.0))
                         {
                             using (SolidBrush solidBrush = new SolidBrush(piece.Color))
                             {
-                                float x = (float)((col + 0.5 + 0.2) * tile_width);
-                                float y = (float)((row + 0.5 + 0.2) * tile_height);
-                                float width = (float)(tile_width * 0.6);
-                                float height = (float)(tile_height * 0.6);
+                                float x = (float)((nx + 0.7) * TileWidth);
+                                float y = (float)((ny + 0.7) * TileHeight);
+                                float width = (float)(TileWidth * 0.6);
+                                float height = (float)(TileHeight * 0.6);
 
                                 pe.Graphics.DrawEllipse(pen, x, y, width, height);
                                 pe.Graphics.FillEllipse(solidBrush, x, y, width, height);
@@ -163,10 +170,10 @@ namespace AmazonChessGUI
                         {
                             using (SolidBrush solidBrush = new SolidBrush(Color.Peru))
                             {
-                                float x = (float)((col + 0.5 + 0.2) * tile_width);
-                                float y = (float)((row + 0.5 + 0.2) * tile_height);
-                                float width = (float)(tile_width * 0.6);
-                                float height = (float)(tile_height * 0.6);
+                                float x = (float)((nx + 0.5 + 0.2) * TileWidth);
+                                float y = (float)((ny + 0.5 + 0.2) * TileHeight);
+                                float width = (float)(TileWidth * 0.6);
+                                float height = (float)(TileHeight * 0.6);
 
                                 pe.Graphics.DrawEllipse(pen, x, y, width, height);
                                 pe.Graphics.FillEllipse(solidBrush, x, y, width, height);
@@ -178,28 +185,17 @@ namespace AmazonChessGUI
             }
         }
 
-        public void ManuallyRepaint()
-        {
-            OnPaint(new PaintEventArgs(
+        public void ManuallyRepaint() => OnPaint(new PaintEventArgs(
                 CreateGraphics(),
                 new Rectangle(0, 0, Width, Height)));
-        }
 
-        public ref ChessPiece Piece(int nx, int ny)
-        {
-            return ref _Matrix[ny, nx];
-        }
-        ref ChessPiece Piece(Chess chess)
-        {
-            return ref _Matrix[chess.ny, chess.nx];
-        }
         void PaintForXY(int nx, int ny, Color color)
         {
             // check
-            if (nx < 0 || ny < 0 || nx >= _horizontal - 1 || ny >= _vertical - 1)
+            if (nx < 0 || ny < 0 || nx >= Horizontal - 1 || ny >= Vertical - 1)
                 return;
 
-            ChessPiece piece = _Matrix[ny, nx];
+            ChessPiece piece = Piece(nx, ny);
             // if (!piec.IsOk)
             // {
             piece.Color = color;
@@ -209,32 +205,49 @@ namespace AmazonChessGUI
             // }
         }
 
-        Chess selected;
-        Chess lastplace;
-        bool validSelect = false;
+        void MovePaint(Move move)
+        {
+            ChessPiece pieceSource = Piece(move.source);
+            ChessPiece pieceDest = Piece(move.dest);
+            ChessPiece pieceArrow = Piece(move.arrow);
+
+            pieceDest.Color = pieceSource.Color;
+            pieceDest.IsOk = true;
+
+            pieceSource.Color = Color.Empty;
+            pieceSource.IsOk = false;
+
+            pieceArrow.Color = Color.DodgerBlue;
+            pieceArrow.IsOk = true;
+
+            Invalidate();
+        }
+
+        #endregion
+
+        #region BasicMove
 
         public enum WhoseMove
         {
             blackMove = 0,
             blackArrow = 1,
             whiteMove = 2,
-            whiteArrow = 3,
-            invalid = 4
+            whiteArrow = 3
         }
 
         public WhoseMove currentMove = WhoseMove.blackMove;
 
-        static public void NextMove(ref WhoseMove move)
-        {
-            move = (++move == WhoseMove.invalid) ? WhoseMove.blackMove : move;
-        }
+        public static WhoseMove NextMove(WhoseMove move) => (move == WhoseMove.whiteArrow) ? WhoseMove.blackMove : (move + 1);
+        public static WhoseMove PrevMove(WhoseMove move) => (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (move - 1);
 
-        static public void PrevMove(ref WhoseMove move)
-        {
-            move = (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (--move);
-        }
+        public void MoveNext() => currentMove = NextMove(currentMove);
+        public void MovePrev() => currentMove = PrevMove(currentMove);
 
-        bool ValidMove(int prev_nx, int prev_ny, int nx, int ny)
+        #endregion
+
+        #region Check
+
+        private bool CheckIfValid(int prev_nx, int prev_ny, int nx, int ny)
         {
             int[] moveDirection = { -1, 1, -16, 16, -15, 15, -17, 17 };
             foreach (var direction in moveDirection)
@@ -251,6 +264,48 @@ namespace AmazonChessGUI
             }
             return false;
         }
+
+        enum WhoWins
+        {
+            black,
+            white,
+            unknown
+        }
+        WhoWins CheckIfWinning()
+        {
+            bool blacklose = true, whitelose = true;
+            for (int nx = 0; nx < 8; ++nx)
+                for (int ny = 0; ny < 8; ++ny)
+                {
+                    for (int i = 0; i < 8; ++i)
+                        for (int j = 0; j < 8; ++j)
+                        {
+                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.Black)
+                                if (CheckIfValid(i, j, nx, ny))
+                                {
+                                    blacklose = false;
+                                }
+                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.White)
+                                if (CheckIfValid(i, j, nx, ny))
+                                {
+                                    whitelose = false;
+                                }
+                        }
+                }
+            if (blacklose)
+                return WhoWins.white;
+            if (whitelose)
+                return WhoWins.black;
+            return WhoWins.unknown;
+        }
+
+        #endregion
+
+        private ChessLocation selected;
+        private ChessLocation lastPlacement;
+        private bool validSelect = false;
+
+        #region Unselect
 
         public void UnselectSelected()
         {
@@ -270,9 +325,13 @@ namespace AmazonChessGUI
             }
         }
 
-        public bool AutoMoveAndPaint()
+        #endregion
+
+        #region MoveAndPaint
+
+        public bool AutoMoveOnce()
         {
-            WhoWins result = CheckIfWins();
+            WhoWins result = CheckIfWinning();
             if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
                 (currentMove == WhoseMove.blackMove && result == WhoWins.white))
             {
@@ -285,12 +344,12 @@ namespace AmazonChessGUI
                 MessageBox.Show("不幸，你输了。", "YOU LOSE", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
-            if (!Game.AutoMoveNext(spf))
+            if (!Game.AutoMoveNext(ParentSPF))
             {
                 MessageBox.Show("调用计算程序失败！", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
             }
-            result = CheckIfWins();
+            result = CheckIfWinning();
             if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
                 (currentMove == WhoseMove.blackMove && result == WhoWins.white))
             {
@@ -304,12 +363,62 @@ namespace AmazonChessGUI
             return true;
         }
 
-        public void CompleteMove()
+        public void CompleteAutoMoveAndPaint()
         {
             MovePaint(Game.GetMoves().Last());
-            NextMove(ref currentMove);
-            NextMove(ref currentMove);
+            MoveNext();
+            MoveNext();
         }
+
+        public void RegretOneMoveAndPaint()
+        {
+            string[] moves = Game.Text.Trim().Split('\n');
+            string lastMove = moves.Last();
+            Game.Text = "";
+            for (int i = 0; i < moves.Length - 1; ++i)
+                Game.Text += moves[i] + Environment.NewLine;
+            string[] coordinates = lastMove.Trim().Split(' ');
+
+            if (coordinates.Length == 4 || coordinates.Length == 6)
+            {
+                ChessPiece pieceSource = Piece(
+                    Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]));
+                ChessPiece pieceDest = Piece(
+                    Convert.ToInt32(coordinates[2]), Convert.ToInt32(coordinates[3]));
+
+                if (coordinates.Length == 6)
+                {
+                    ChessPiece pieceArrow = Piece(
+                        Convert.ToInt32(coordinates[4]), Convert.ToInt32(coordinates[5]));
+                    pieceArrow.Color = Color.Empty;
+                    pieceArrow.IsOk = false;
+
+                    MovePrev();
+                }
+
+                pieceSource.Color = pieceDest.Color;
+                pieceSource.IsOk = true;
+
+                pieceDest.Color = Color.Empty;
+                pieceDest.IsOk = false;
+
+                MovePrev();
+            }
+            else
+            {
+                MessageBox.Show("坐标不合法！" + Environment.NewLine +
+                    "（提示：请不要用文本编辑器编辑amz文件，否则可能导致此错误）", "Internal ERROR",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
+
+            UnselectSelected();
+            Invalidate();
+        }
+
+        #endregion
+
+        #region MouseClick
 
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
         {
@@ -318,25 +427,25 @@ namespace AmazonChessGUI
                 case MouseButtons.Left:
                     // left -> place a chess
 
-                    float tile_width = (float)(1.0 * this.Width / this._vertical);
-                    float tile_height = (float)(1.0 * this.Height / this._horizontal);
+                    int nx = Convert.ToInt32(Math.Round(e.X / TileWidth - 1.0));
+                    int ny = Convert.ToInt32(Math.Round(e.Y / TileHeight - 1.0));
 
-                    int nx = Convert.ToInt32(Math.Round(e.X / tile_width - 1.0));
-                    int ny = Convert.ToInt32(Math.Round(e.Y / tile_height - 1.0));
-
-                    if (nx < 0 || ny < 0 || nx >= _horizontal - 1 || ny >= _vertical - 1)
+                    if (nx < 0 || ny < 0 || nx >= Horizontal - 1 || ny >= Vertical - 1)
                         break;
 
-                    float div_width = (float)((nx + 1.0) * tile_width) - e.X;
-                    float div_height = (float)((ny + 1.0) * tile_height) - e.Y;
+                    float div_width = (float)((nx + 1.0) * TileWidth) - e.X;
+                    float div_height = (float)((ny + 1.0) * TileHeight) - e.Y;
+
+                    // 半径的平方值，用来确定是否容忍这次放置
+                    float _RadiusSquare = (TileWidth * TileWidth + TileHeight * TileHeight) / 9;
 
                     if (div_width * div_width + div_height * div_height <= _RadiusSquare)
                     {
-                        if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
+                        if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove) // 该移动了
                         {
                             if (validSelect) //已选中
                             {
-                                if (ValidMove(selected.nx, selected.ny, nx, ny))
+                                if (CheckIfValid(selected.nx, selected.ny, nx, ny))
                                 {
                                     if (!(selected.nx == nx && selected.ny == ny))
                                     {
@@ -352,9 +461,9 @@ namespace AmazonChessGUI
                                             selected.nx + " " + selected.ny + " "
                                             + nx + " " + ny + " ";
 
-                                        NextMove(ref currentMove);
-                                        lastplace.nx = nx;
-                                        lastplace.ny = ny;
+                                        MoveNext();
+                                        lastPlacement.nx = nx;
+                                        lastPlacement.ny = ny;
                                         validSelect = false;
                                     }
                                 }
@@ -403,16 +512,16 @@ namespace AmazonChessGUI
                             ChessPiece piece = Piece(nx, ny);
                             if (!piece.IsOk)
                             {
-                                if (ValidMove(lastplace.nx, lastplace.ny, nx, ny))
+                                if (CheckIfValid(lastPlacement.nx, lastPlacement.ny, nx, ny))
                                 {
                                     PaintForXY(nx, ny, Color.DodgerBlue);
                                     ManuallyRepaint();
 
                                     Game.Text += nx + " " + ny + Environment.NewLine;
 
-                                    NextMove(ref currentMove);
+                                    MoveNext();
 
-                                    AutoMoveAndPaint();
+                                    AutoMoveOnce();
                                 }
                             }
                         }
@@ -428,83 +537,6 @@ namespace AmazonChessGUI
 
         }
 
-        enum WhoWins
-        {
-            black,
-            white,
-            unknown
-        }
-        WhoWins CheckIfWins()
-        {
-            bool blacklose = true, whitelose = true ;
-            for (int nx = 0; nx < 8; ++nx)
-                for (int ny = 0; ny < 8; ++ny)
-                {
-                    for (int i = 0; i < 8; ++i)
-                        for (int j = 0; j < 8; ++j)
-                        {
-                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.Black)
-                                if (ValidMove(i, j, nx, ny))
-                                {
-                                    blacklose = false;
-                                }
-                            if (Piece(i, j).IsOk && Piece(i, j).Color == Color.White)
-                                if (ValidMove(i, j, nx, ny))
-                                {
-                                    whitelose = false;
-                                }
-                        }
-                }
-            if (blacklose)
-                return WhoWins.white;
-            if (whitelose)
-                return WhoWins.black;
-            return WhoWins.unknown;
-        }
-
-        void ChessTable_Resize(object sender, EventArgs e)
-        {
-            Invalidate();
-        }
-
-        void MovePaint(Move move)
-        {
-            ChessPiece pieceSource = Piece(move.source);
-            ChessPiece pieceDest = Piece(move.dest);
-            ChessPiece pieceArrow = Piece(move.arrow);
-
-            pieceDest.Color = pieceSource.Color;
-            pieceDest.IsOk = true;
-
-            pieceSource.Color = Color.Empty;
-            pieceSource.IsOk = false;
-
-            pieceArrow.Color = Color.DodgerBlue;
-            pieceArrow.IsOk = true;
-
-            Invalidate();
-        }
-
-        ChessPiece[,] _Matrix;
-
-        private void InitMatrix()
-        {
-            _Matrix = new ChessPiece[Row, Col];
-
-            for (int i = 0; i < _Matrix.Length; i++)
-            {
-                _Matrix[i / Col, i % Col] = new ChessPiece
-                {
-                    Color = Color.Black,
-                    IsOk = false
-                };
-            }
-        }
-    }
-
-    public class ChessPiece
-    {
-        public Color Color { set; get; }
-        public bool IsOk { set; get; }
+        #endregion
     }
 }
