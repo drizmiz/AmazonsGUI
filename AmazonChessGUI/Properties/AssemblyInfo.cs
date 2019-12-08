@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("AmazonChessGUI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("AmazonsGUI")]
+[assembly: AssemblyDescription("下亚马逊棋的程序的配套GUI")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AmazonChessGUI")]
+[assembly: AssemblyCompany("DRZ")]
+[assembly: AssemblyProduct("AmazonsGUI")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
