@@ -4,7 +4,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading;
-
+using System.Drawing.Drawing2D;
 
 namespace AmazonChessGUI
 {
@@ -33,17 +33,11 @@ namespace AmazonChessGUI
             try
             {
                 Point pt = table.PointToScreen(table.Location);
-                var tableX = pt.X - (int)(0.4 * table.TileWidth);
-                var tableY = pt.Y - (int)(0.4 * table.TileHeight);
-                var tableW = table.Width;
-                var tableH = table.Height;
-                var newtrd = new Thread((ThreadStart)delegate
-                {
-                    Thread.Sleep(100);
-                    var img = GetScreen(tableX, tableY, tableW, tableH);
-                    SaveToFile(img, filename, GetFormat(filename));
-                });
-                newtrd.Start();
+                var W = 4 * table.Width;
+                var H = 4 * table.Height;
+
+                var img = GetImg(table, W, H, 6);
+                SaveToFile(img, filename, GetFormat(filename));
             }
             catch (Exception)
             {
@@ -52,6 +46,80 @@ namespace AmazonChessGUI
                 return false;
             }
             return true;
+        }
+        static private Image GetImg(in ChessTable table, int w, int h, int linewidth = 2)
+        {
+            Bitmap bm = new Bitmap(w, h);
+            Graphics g = Graphics.FromImage(bm);
+            g.SmoothingMode = SmoothingMode.HighQuality;
+
+            using (SolidBrush solidBrush = new SolidBrush(Color.Peru))
+            {
+                g.FillRectangle(solidBrush, new Rectangle(0, 0, w, h));
+            }
+
+            var TileWidth = 1.0 * h / table.Vertical;
+            var TileHeight = 1.0 * h / table.Horizontal;
+
+            using (Pen pen = new Pen(new SolidBrush(table.ColorOfLine), linewidth))
+            {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                for (int row = 1; row <= table.Horizontal; row++)
+                {
+                    g.DrawLine(pen, (float)(TileWidth * 0.5), (float)(TileHeight * (row - 0.5)),
+                        (float)(TileWidth * (table.Vertical - 0.5)), (float)(TileHeight * (row - 0.5)));
+                }
+
+                for (int col = 1; col <= table.Vertical; col++)
+                {
+                    g.DrawLine(pen, (float)(TileWidth * (col - 0.5)), (float)(TileHeight * 0.5),
+                        (float)(TileWidth * (col - 0.5)), (float)(TileHeight * (table.Horizontal - 0.5)));
+                }
+            }
+
+            for (int ny = 0; ny < table.Row; ny++)
+            {
+                for (int nx = 0; nx < table.Col; nx++)
+                {
+                    ChessTable.ChessPiece piece = table.Piece(nx, ny);
+
+                    if (piece.IsOk)
+                    {
+                        using (Pen pen = new Pen(Color.Black, linewidth * 2))
+                        {
+                            using (SolidBrush solidBrush = new SolidBrush(piece.Color))
+                            {
+                                float x = (float)((nx + 0.7) * TileWidth);
+                                float y = (float)((ny + 0.7) * TileHeight);
+                                float width = (float)(TileWidth * 0.6);
+                                float height = (float)(TileHeight * 0.6);
+
+                                g.DrawEllipse(pen, x, y, width, height);
+                                g.FillEllipse(solidBrush, x, y, width, height);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        using (Pen pen = new Pen(Color.Peru, (float)0.0))
+                        {
+                            using (SolidBrush solidBrush = new SolidBrush(Color.Peru))
+                            {
+                                float x = (float)((nx + 0.5 + 0.2) * TileWidth);
+                                float y = (float)((ny + 0.5 + 0.2) * TileHeight);
+                                float width = (float)(TileWidth * 0.6);
+                                float height = (float)(TileHeight * 0.6);
+
+                                g.DrawEllipse(pen, x, y, width, height);
+                                g.FillEllipse(solidBrush, x, y, width, height);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return bm;
         }
 
         static private void SaveToFile(Image pic, string filename, ImageFormat format)
@@ -125,7 +193,7 @@ namespace AmazonChessGUI
             }
             catch (Exception)
             {
-                MessageBox.Show("读文件失败！", "错误", 
+                MessageBox.Show("读文件失败！", "错误",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
