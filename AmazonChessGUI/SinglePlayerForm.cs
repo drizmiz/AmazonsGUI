@@ -35,18 +35,23 @@ namespace AmazonChessGUI
         private void RegretButton_Click(object sender, EventArgs e)
         {
             if (Game.Text == "") return;
+            string[] moves = Game.Text.Trim().Split('\n');
+            if (moves.Length == 1 && chessTable.CurrentMove == ChessTable.WhoseMove.whiteMove) return;
+
+            chessTable.ValidBoard = true;
+
             chessTable.UnselectSelected();
 
-            if (chessTable.currentMove == ChessTable.WhoseMove.blackMove ||
-                chessTable.currentMove == ChessTable.WhoseMove.whiteMove)
+            if (chessTable.CurrentMove == ChessTable.WhoseMove.blackMove ||
+                chessTable.CurrentMove == ChessTable.WhoseMove.whiteMove)
                 chessTable.RegretOneMoveAndPaint();
             chessTable.RegretOneMoveAndPaint();
         }
 
         private void HintButton_Click(object sender, EventArgs e)
         {
-            if (chessTable.currentMove != ChessTable.WhoseMove.blackMove &&
-                chessTable.currentMove != ChessTable.WhoseMove.whiteMove)
+            if (chessTable.CurrentMove != ChessTable.WhoseMove.blackMove &&
+                chessTable.CurrentMove != ChessTable.WhoseMove.whiteMove)
             {
                 HintMessageShow();
                 return;
@@ -88,8 +93,8 @@ namespace AmazonChessGUI
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if(!(chessTable.currentMove == ChessTable.WhoseMove.blackMove||
-                chessTable.currentMove == ChessTable.WhoseMove.whiteMove))
+            if(!(chessTable.CurrentMove == ChessTable.WhoseMove.blackMove||
+                chessTable.CurrentMove == ChessTable.WhoseMove.whiteMove))
             {
                 MessageBox.Show("请在完成当前移动（放置Arrow）后再保存~", "提示",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -126,10 +131,16 @@ namespace AmazonChessGUI
 
         private void ReverseButton_Click(object sender, EventArgs e)
         {
-            if (chessTable.currentMove != ChessTable.WhoseMove.blackMove &&
-                chessTable.currentMove != ChessTable.WhoseMove.whiteMove)
+            if (chessTable.CurrentMove != ChessTable.WhoseMove.blackMove &&
+                chessTable.CurrentMove != ChessTable.WhoseMove.whiteMove)
             {
                 HintMessageShow();
+                return;
+            }
+            if(!chessTable.ValidBoard)
+            {
+                MessageBox.Show("这局游戏已经结束了！", "提示",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             if(!chessTable.AutoMoveOnce())

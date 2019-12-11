@@ -41,6 +41,7 @@ namespace AmazonChessGUI
                 }
                 */
                 game.Text = reader.ReadToEnd().Trim() + Environment.NewLine;
+                if (game.Text == Environment.NewLine) game.Text = "";
                 reader.Close();
                 // stream.Close();
             }

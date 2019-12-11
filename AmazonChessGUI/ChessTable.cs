@@ -40,6 +40,10 @@ namespace AmazonChessGUI
                 MovePaint(move);
             }
 
+            if (Game.Text == "" || Game.Text.Trim().Split('\n').Length % 2 == 0)
+                CurrentMove = WhoseMove.blackMove;
+            else CurrentMove = WhoseMove.whiteMove;
+
             Invalidate();
 
             Inited = true;
@@ -47,7 +51,7 @@ namespace AmazonChessGUI
 
         private void ChessTable_Load(object sender, EventArgs e)
         {
-            if(!Inited)
+            if (!Inited)
             {
                 Init(new ChessGame());
             }
@@ -230,13 +234,23 @@ namespace AmazonChessGUI
             whiteArrow = 3
         }
 
-        public WhoseMove currentMove = WhoseMove.blackMove;
+        private WhoseMove curMove = WhoseMove.blackMove;
+        public WhoseMove CurrentMove { 
+            get { return curMove; } 
+            private set {
+                if (value == WhoseMove.whiteMove)
+                    ParentSPF.directionLabel.Text = "当前移动方\r\n白方";
+                if (value == WhoseMove.blackMove)
+                    ParentSPF.directionLabel.Text = "当前移动方\r\n黑方";
+                curMove = value;
+            } 
+        }
 
         public static WhoseMove NextMove(WhoseMove move) => (move == WhoseMove.whiteArrow) ? WhoseMove.blackMove : (move + 1);
         public static WhoseMove PrevMove(WhoseMove move) => (move == WhoseMove.blackMove) ? WhoseMove.whiteArrow : (move - 1);
 
-        public void MoveNext() => currentMove = NextMove(currentMove);
-        public void MovePrev() => currentMove = PrevMove(currentMove);
+        public void MoveNext() => CurrentMove = NextMove(CurrentMove);
+        public void MovePrev() => CurrentMove = PrevMove(CurrentMove);
 
         #endregion
 
@@ -287,10 +301,12 @@ namespace AmazonChessGUI
                                 }
                         }
                 }
+            ValidBoard = false;
             if (blacklose)
                 return WhoWins.white;
             if (whitelose)
                 return WhoWins.black;
+            ValidBoard = true;
             return WhoWins.unknown;
         }
 
@@ -304,14 +320,14 @@ namespace AmazonChessGUI
 
         public void UnselectSelected()
         {
-            if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove)   // 该移动了
+            if (CurrentMove == WhoseMove.blackMove || CurrentMove == WhoseMove.whiteMove)   // 该移动了
             {
                 if (validSelect)
                 {
                     ChessPiece piece = Piece(selected.nx, selected.ny);
-                    if (currentMove == WhoseMove.blackMove)
+                    if (CurrentMove == WhoseMove.blackMove)
                         piece.Color = Color.Black;
-                    else if (currentMove == WhoseMove.whiteMove)
+                    else if (CurrentMove == WhoseMove.whiteMove)
                         piece.Color = Color.White;
                     validSelect = false;
 
@@ -327,14 +343,14 @@ namespace AmazonChessGUI
         public bool AutoMoveOnce()
         {
             WhoWins result = CheckIfWinning();
-            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
-                (currentMove == WhoseMove.blackMove && result == WhoWins.white))
+            if ((CurrentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
+                (CurrentMove == WhoseMove.blackMove && result == WhoWins.white))
             {
                 MessageBox.Show("恭喜你，你赢了！", "YOU WIN", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
-            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
-                (currentMove == WhoseMove.blackMove && result == WhoWins.black))
+            if ((CurrentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
+                (CurrentMove == WhoseMove.blackMove && result == WhoWins.black))
             {
                 MessageBox.Show("不幸，你输了。", "YOU LOSE", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
@@ -345,13 +361,13 @@ namespace AmazonChessGUI
                 Environment.Exit(0);
             }
             result = CheckIfWinning();
-            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
-                (currentMove == WhoseMove.blackMove && result == WhoWins.white))
+            if ((CurrentMove == WhoseMove.whiteMove && result == WhoWins.black) ||
+                (CurrentMove == WhoseMove.blackMove && result == WhoWins.white))
             {
                 MessageBox.Show("不幸，你输了。", "YOU LOSE", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            if ((currentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
-                (currentMove == WhoseMove.blackMove && result == WhoWins.black))
+            if ((CurrentMove == WhoseMove.whiteMove && result == WhoWins.white) ||
+                (CurrentMove == WhoseMove.blackMove && result == WhoWins.black))
             {
                 MessageBox.Show("恭喜你，你赢了！", "YOU WIN", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -413,6 +429,8 @@ namespace AmazonChessGUI
 
         #endregion
 
+        public bool ValidBoard { get; set; } = true;
+
         #region MouseClick
 
         void ChessTable_MouseClick(object sender, MouseEventArgs e)
@@ -436,7 +454,7 @@ namespace AmazonChessGUI
 
                     if (div_width * div_width + div_height * div_height <= _RadiusSquare)
                     {
-                        if (currentMove == WhoseMove.blackMove || currentMove == WhoseMove.whiteMove) // 该移动了
+                        if (CurrentMove == WhoseMove.blackMove || CurrentMove == WhoseMove.whiteMove) // 该移动了
                         {
                             if (validSelect) //已选中
                             {
@@ -447,7 +465,7 @@ namespace AmazonChessGUI
                                         ChessPiece piece = Piece(selected.nx, selected.ny);
                                         piece.IsOk = false;
 
-                                        if (currentMove == WhoseMove.blackMove)
+                                        if (CurrentMove == WhoseMove.blackMove)
                                             PaintForXY(nx, ny, Color.Black);
                                         else
                                             PaintForXY(nx, ny, Color.White);
@@ -465,9 +483,9 @@ namespace AmazonChessGUI
                                 else
                                 {
                                     ChessPiece piece = Piece(selected.nx, selected.ny);
-                                    if (currentMove == WhoseMove.blackMove)
+                                    if (CurrentMove == WhoseMove.blackMove)
                                         piece.Color = Color.Black;
-                                    else if (currentMove == WhoseMove.whiteMove)
+                                    else if (CurrentMove == WhoseMove.whiteMove)
                                         piece.Color = Color.White;
                                     validSelect = false;
 
@@ -479,7 +497,7 @@ namespace AmazonChessGUI
                                 ChessPiece piece = Piece(nx, ny);
                                 if (piece.IsOk)
                                 {
-                                    if (piece.Color == Color.Black && currentMove == WhoseMove.blackMove)
+                                    if (piece.Color == Color.Black && CurrentMove == WhoseMove.blackMove)
                                     {
 
                                         piece.Color = Color.DimGray;
@@ -489,7 +507,7 @@ namespace AmazonChessGUI
 
                                         Invalidate();
                                     }
-                                    else if (piece.Color == Color.White && currentMove == WhoseMove.whiteMove)
+                                    else if (piece.Color == Color.White && CurrentMove == WhoseMove.whiteMove)
                                     {
 
                                         piece.Color = Color.LemonChiffon;
@@ -530,8 +548,7 @@ namespace AmazonChessGUI
                     break;
             }
 
+            #endregion
         }
-
-        #endregion
     }
 }

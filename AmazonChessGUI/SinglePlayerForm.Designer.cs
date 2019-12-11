@@ -39,6 +39,7 @@
             this.reverseButton = new System.Windows.Forms.Button();
             this.waitingLabel = new System.Windows.Forms.Label();
             this.chessTable = new AmazonChessGUI.ChessTable();
+            this.directionLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // saveButton
@@ -138,12 +139,24 @@
             this.chessTable.Size = new System.Drawing.Size(382, 375);
             this.chessTable.TabIndex = 0;
             // 
+            // directionLabel
+            // 
+            this.directionLabel.AutoSize = true;
+            this.directionLabel.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.directionLabel.Location = new System.Drawing.Point(409, 190);
+            this.directionLabel.Name = "directionLabel";
+            this.directionLabel.Size = new System.Drawing.Size(68, 34);
+            this.directionLabel.TabIndex = 10;
+            this.directionLabel.Text = "当前移动方\r\n黑方";
+            this.directionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // SinglePlayerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Peru;
             this.ClientSize = new System.Drawing.Size(498, 444);
+            this.Controls.Add(this.directionLabel);
             this.Controls.Add(this.waitingLabel);
             this.Controls.Add(this.reverseButton);
             this.Controls.Add(this.exitButton);
@@ -179,5 +192,6 @@
         private System.Windows.Forms.Button exitButton;
         private System.Windows.Forms.Button reverseButton;
         public System.Windows.Forms.Label waitingLabel;
+        public System.Windows.Forms.Label directionLabel;
     }
 }
