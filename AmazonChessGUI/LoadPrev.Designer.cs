@@ -92,6 +92,7 @@
             this.Name = "LoadPrev";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "LoadPrev";
+            this.Load += new System.EventHandler(this.LoadPrev_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

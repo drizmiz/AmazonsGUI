@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Threading;
 using System.Drawing.Drawing2D;
 
 namespace AmazonChessGUI

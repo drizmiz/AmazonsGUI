@@ -118,6 +118,8 @@
     <None Include="Resources\timg.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\Amazons_recover.exe" />
+    <None Include="Resources\Amazons_recover_gcc.exe" />
     <Content Include="timg.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -176,6 +176,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Let\'s Play Amazons!";
             this.Load += new System.EventHandler(this.SinglePlayerForm_Load);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExitButton_Click);
             this.ResumeLayout(false);
             this.PerformLayout();
 

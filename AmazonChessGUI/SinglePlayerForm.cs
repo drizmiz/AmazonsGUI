@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -23,6 +24,12 @@ namespace AmazonChessGUI
 
         private void ExitButton_Click(object sender, EventArgs e)
         {
+            try
+            {
+                if (File.Exists("Amazons_recover.exe"))
+                    File.Delete("Amazons_recover.exe");
+            }
+            catch (Exception) { }
             Environment.Exit(0);
         }
 

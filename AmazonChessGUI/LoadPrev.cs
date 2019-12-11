@@ -2,6 +2,8 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
+using System.IO;
+using AmazonChessGUI.Properties;
 
 namespace AmazonChessGUI
 {
@@ -110,6 +112,23 @@ namespace AmazonChessGUI
             newTrd.SetApartmentState(ApartmentState.STA);
             newTrd.Start();
             Close();
+        }
+
+        private void LoadPrev_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                if (File.Exists("Amazons_recover.exe"))
+                    File.Delete("Amazons_recover.exe");
+                var fs = File.OpenWrite("Amazons_recover.exe");
+                fs.Write(Resources.Amazons_recover_gcc, 0, Resources.Amazons_recover_gcc.Length);
+                fs.Close();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("写文件失败", "启动失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
         }
     }
 }
