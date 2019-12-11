@@ -9,7 +9,13 @@ namespace AmazonChessGUI
     public partial class ChessTable : UserControl
     {
         public ChessGame Game { get; private set; }
-        private SinglePlayerForm ParentSPF { get { return (SinglePlayerForm)ParentForm; } }
+        private SinglePlayerForm ParentSPF
+        {
+            get
+            {
+                return (SinglePlayerForm)ParentForm;
+            }
+        }
 
         #region Initialization
 
@@ -111,8 +117,8 @@ namespace AmazonChessGUI
 
         #region Paint
 
-        private float TileWidth { get { return (float)(1.0 * Width / Vertical); } }
-        private float TileHeight { get { return (float)(1.0 * Height / Horizontal); } }
+        public float TileWidth { get { return (float)(1.0 * Width / Vertical); } }
+        public float TileHeight { get { return (float)(1.0 * Height / Horizontal); } }
 
         // 线的颜色
         public Color ColorOfLine => Color.Black;

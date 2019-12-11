@@ -101,25 +101,50 @@ namespace AmazonChessGUI
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            if(!(chessTable.CurrentMove == ChessTable.WhoseMove.blackMove||
+            if (!chessTable.ValidBoard)
+            {
+                if (MessageBox.Show("这局游戏已经结束了！也许你想要把这局棋留作纪念？按“确定”可以保留局面的截图哦！\r\n" +
+                    "Tips: 按“取消”之后悔一步棋则可以保存局面为*.amz文件", "提示",
+                    MessageBoxButtons.OKCancel, MessageBoxIcon.Question)
+                    == DialogResult.OK)
+                {
+                    string imgpath;
+                    using (SaveFileDialog dialog = new SaveFileDialog
+                    {
+                        Filter = "png文件(*.png)|*.png|" +
+                        "jpeg文件(*.jpg)|*.jpg|" +
+                        "所有文件(*.*)|*.*",
+                        FileName = "interesting.png",
+                        InitialDirectory = Environment.CurrentDirectory,
+                        DefaultExt = "png"
+                    })
+                    {
+                        if (dialog.ShowDialog() == DialogResult.Cancel) return;
+                        imgpath = dialog.FileName;
+                    }
+                    if (imgpath == "") return;
+                    SaveAMZ.SaveBoardImage(imgpath, chessTable);
+                }
+                return;
+            }
+            if (!(chessTable.CurrentMove == ChessTable.WhoseMove.blackMove ||
                 chessTable.CurrentMove == ChessTable.WhoseMove.whiteMove))
             {
-                MessageBox.Show("请在完成当前移动（放置Arrow）后再保存~", "提示",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                HintMessageShow("请在完成当前移动（放置Arrow）后再保存~");
                 return;
             }
             string path;
             using (SaveFileDialog dialog = new SaveFileDialog
             {
                 Filter = "亚马逊棋存档文件(*.amz)|*.amz|" +
-                "文本文件(*.txt)|*.txt" +
-                "|所有文件(*.*)|*.*",
+                "文本文件(*.txt)|*.txt|" +
+                "所有文件(*.*)|*.*",
                 FileName = "quick_save.amz",
                 InitialDirectory = Environment.CurrentDirectory,
                 DefaultExt = "amz"
             })
             {
-                dialog.ShowDialog();
+                if (dialog.ShowDialog() == DialogResult.Cancel) return;
                 path = dialog.FileName;
             }
             if (path == "") return;

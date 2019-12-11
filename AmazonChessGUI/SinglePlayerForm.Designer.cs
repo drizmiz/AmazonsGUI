@@ -138,6 +138,7 @@
             this.chessTable.Name = "chessTable";
             this.chessTable.Size = new System.Drawing.Size(382, 375);
             this.chessTable.TabIndex = 0;
+            this.chessTable.ValidBoard = true;
             // 
             // directionLabel
             // 
