@@ -235,7 +235,8 @@ namespace AmazonChessGUI
         }
 
         private WhoseMove curMove = WhoseMove.blackMove;
-        public WhoseMove CurrentMove { 
+        public WhoseMove CurrentMove
+        { 
             get { return curMove; } 
             private set {
                 if (value == WhoseMove.whiteMove)
@@ -547,8 +548,7 @@ namespace AmazonChessGUI
                     UnselectSelected();
                     break;
             }
-
-            #endregion
         }
+        #endregion
     }
 }

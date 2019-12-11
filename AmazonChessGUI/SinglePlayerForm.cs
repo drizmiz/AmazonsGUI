@@ -28,7 +28,9 @@ namespace AmazonChessGUI
 
         private void HelpButton_Click(object sender, EventArgs e)
         {
+#pragma warning disable IDE0067 // 丢失范围之前释放对象
             var form = new HelpForm();
+#pragma warning restore IDE0067 // 丢失范围之前释放对象
             form.Show();
         }
 
@@ -50,16 +52,22 @@ namespace AmazonChessGUI
 
         private void HintButton_Click(object sender, EventArgs e)
         {
-            if (chessTable.CurrentMove != ChessTable.WhoseMove.blackMove &&
-                chessTable.CurrentMove != ChessTable.WhoseMove.whiteMove)
+            if (CheckIfNotMoved())
             {
                 HintMessageShow();
                 return;
             }
+            chessTable.UnselectSelected();
             chessTable.AutoMoveOnce();
             chessTable.ManuallyRepaint();
-            Thread.Sleep(3000);
-            chessTable.AutoMoveOnce();
+            var newTrd = new Thread((ThreadStart)delegate
+            {
+                chessTable.ValidBoard = false;
+                Thread.Sleep(3000);
+                chessTable.ValidBoard = true;
+                chessTable.AutoMoveOnce();
+            });
+            newTrd.Start();
         }
 
         private void LoadButton_Click(object sender, EventArgs e)
@@ -129,20 +137,25 @@ namespace AmazonChessGUI
             Close();
         }
 
+        private bool CheckIfNotMoved()
+        {
+            return (chessTable.CurrentMove != ChessTable.WhoseMove.blackMove &&
+                chessTable.CurrentMove != ChessTable.WhoseMove.whiteMove) ;
+        }
+
         private void ReverseButton_Click(object sender, EventArgs e)
         {
-            if (chessTable.CurrentMove != ChessTable.WhoseMove.blackMove &&
-                chessTable.CurrentMove != ChessTable.WhoseMove.whiteMove)
+            if (CheckIfNotMoved())
             {
                 HintMessageShow();
                 return;
             }
             if(!chessTable.ValidBoard)
             {
-                MessageBox.Show("这局游戏已经结束了！", "提示",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                HintMessageShow("这局游戏已经结束了！");
                 return;
             }
+            chessTable.UnselectSelected();
             if(!chessTable.AutoMoveOnce())
             {
                 chessTable.MoveNext();
@@ -150,9 +163,10 @@ namespace AmazonChessGUI
             }
         }
 
-        private void HintMessageShow()
+        private void HintMessageShow(string text = "此操作仅当你还没有做本回合的移动时有效\r\n（可以单击“悔棋”按钮来撤回这一移动）"
+            , string caption = "提示")
         {
-            MessageBox.Show("此操作仅当你还没有做本回合的移动时有效" + Environment.NewLine + "可以单击“悔棋”按钮来撤回这一移动", "提示",
+            MessageBox.Show(text, caption,
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
