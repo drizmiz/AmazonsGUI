@@ -150,15 +150,6 @@ namespace AmazonChessGUI
 
             return format;
         }
-
-        static private Image GetScreen(int x, int y, int width, int height)
-        {
-            Bitmap bm = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(bm);
-            g.CopyFromScreen(x, y, 0, 0, new Size(width, height));
-
-            return bm;
-        }
     }
     static class LoadAMZ
     {

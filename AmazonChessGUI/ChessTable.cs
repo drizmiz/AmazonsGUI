@@ -9,13 +9,7 @@ namespace AmazonChessGUI
     public partial class ChessTable : UserControl
     {
         public ChessGame Game { get; private set; }
-        private SinglePlayerForm ParentSPF
-        {
-            get
-            {
-                return (SinglePlayerForm)ParentForm;
-            }
-        }
+        private SinglePlayerForm ParentSPF => (SinglePlayerForm)ParentForm;
 
         #region Initialization
 
@@ -298,14 +292,11 @@ namespace AmazonChessGUI
                         {
                             if (Piece(i, j).IsOk && Piece(i, j).Color == Color.Black)
                                 if (CheckIfValid(i, j, nx, ny))
-                                {
                                     blacklose = false;
-                                }
+
                             if (Piece(i, j).IsOk && Piece(i, j).Color == Color.White)
                                 if (CheckIfValid(i, j, nx, ny))
-                                {
                                     whitelose = false;
-                                }
                         }
                 }
             ValidBoard = false;
@@ -485,6 +476,7 @@ namespace AmazonChessGUI
                                         lastPlacement.nx = nx;
                                         lastPlacement.ny = ny;
                                         validSelect = false;
+                                        ParentSPF.Saved = false;
                                     }
                                 }
                                 else

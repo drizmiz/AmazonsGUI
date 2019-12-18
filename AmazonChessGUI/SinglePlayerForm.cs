@@ -22,14 +22,24 @@ namespace AmazonChessGUI
             chessTable.Init(Game);
         }
 
+        public bool Saved { get; set; } = true;
+
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!Saved)
+                if (MessageBox.Show("当前的棋局还未保存，确定要退出吗？", "提示",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.No)
+                {
+                    if (e is FormClosingEventArgs fc_e)
+                        fc_e.Cancel = true;
+                    return;
+                }
+            base.OnFormClosing(e);
+        }
+
         private void ExitButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (File.Exists("Amazons_recover.exe"))
-                    File.Delete("Amazons_recover.exe");
-            }
-            catch (Exception) { }
             Environment.Exit(0);
         }
 
@@ -110,7 +120,7 @@ namespace AmazonChessGUI
         {
             if (!chessTable.ValidBoard)
             {
-                if (MessageBox.Show("这局游戏已经结束了！也许你想要把这局棋留作纪念？按“确定”可以保留局面的截图哦！\r\n" +
+                if (MessageBox.Show("这局游戏已经结束了！也许你想要把这局棋留作纪念？按“确定”可以保留局面的截图哦！" + Environment.NewLine +
                     "Tips: 按“取消”之后悔一步棋则可以保存局面为*.amz文件", "提示",
                     MessageBoxButtons.OKCancel, MessageBoxIcon.Question)
                     == DialogResult.OK)
@@ -156,6 +166,7 @@ namespace AmazonChessGUI
             }
             if (path == "") return;
             SaveAMZ.SaveGame(path, Game);
+            Saved = true;
         }
 
         private void NewButton_Click(object sender, EventArgs e)
@@ -182,7 +193,7 @@ namespace AmazonChessGUI
                 HintMessageShow();
                 return;
             }
-            if(!chessTable.ValidBoard)
+            if (!chessTable.ValidBoard)
             {
                 HintMessageShow("这局游戏已经结束了！");
                 return;
